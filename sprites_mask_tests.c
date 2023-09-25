@@ -23,6 +23,50 @@ void precalculate_shift_tables(void)
 	}
 }
 
+void sprite_init(void)
+{
+	int i;
+
+	precalculate_shift_tables();
+
+	for(i=0; i<0x1800; i++)
+	{
+		if(i & 0x20)
+		{
+			background_vdisplay_bin_buff[i] = 0x55;
+	  		vdisplay_bin_buff[i] = 0x55;
+		}
+		else
+		{
+			background_vdisplay_bin_buff[i] = 0xaa;
+	  		vdisplay_bin_buff[i] = 0xaa;
+		}
+	}
+}
+
+void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset)
+{
+	psprite->width = psprite_graphdef->width;
+	psprite->height = psprite_graphdef->height;
+	psprite->frame_size = psprite_graphdef->frame_size;
+	sprite_set_frames_subset(psprite, psprite_graphdef, first_frane_offset, last_frane_offset);
+}
+
+void sprite_set_frames_subset(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset)
+{
+	psprite->first_frame = psprite->actual_frame = (psprite_graphdef->graphic_bin_def) + first_frane_offset;
+	psprite->last_frame = (psprite_graphdef->graphic_bin_def) + last_frane_offset;
+}
+
+void sprite_next_frame(t_sprite *psprite)
+{
+	psprite->actual_frame += psprite->frame_size;
+	if((psprite->actual_frame) >= (psprite->last_frame))
+	{
+		psprite->actual_frame = psprite->first_frame;
+	}
+}
+
 int guarda_sp;
 byte width;
 byte height;
@@ -37,13 +81,13 @@ int iWidth;
 byte mask_start_array[] = {0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 byte mask_end_array[] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x7, 0x03, 0x01};
 
-void draw_sprite(t_sprite *psprite)
+void sprite_draw(t_sprite *psprite)
 {	
 	byte x0, x1, aux;
 
 	width = psprite->width;
 	height = psprite->height;
-	p_gbd = psprite->graphic_bin_def;
+	p_gbd = psprite->actual_frame;
 	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
 	p_shift_table_high = 0xf0 | (((psprite->pos_x)&7)<<1);
 	mask_start = mask_start_array[(psprite->pos_x)&7];
@@ -182,7 +226,7 @@ void draw_sprite(t_sprite *psprite)
 
 }
 
-void update_display_sprite(t_sprite *psprite)
+void sprite_update_display(t_sprite *psprite)
 {
 	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->to_update_y))<<5) + (((unsigned int)(psprite->to_update_x))>>3);
 	p_disp = (byte *) (0x4000 + 
@@ -223,7 +267,7 @@ void update_display_sprite(t_sprite *psprite)
 	#endasm
 }
 
-void restore_vdisplay_sprite(t_sprite *psprite)
+void sprite_restore_vdisplay(t_sprite *psprite)
 {
 	if((psprite->last_y) == 255) return; // el sprite no fue dibujado en el buffer virtual, no debe ser restaurado el buffer
 
@@ -252,7 +296,7 @@ void restore_vdisplay_sprite(t_sprite *psprite)
 	#endasm
 }
 
-void transfer_vdisplay(void)
+void sprite_transfer_vdisplay(void)
 {
 
 	#asm
@@ -314,7 +358,7 @@ void transfer_vdisplay(void)
 	#endasm
 }
 
-void transfer_and_restore_vdisplay(void)
+void sprite_transfer_and_restore_vdisplay(void)
 {
 
 	#asm
@@ -556,25 +600,4 @@ void transfer_and_restore_vdisplay(void)
 		ld sp, (_guarda_sp)
 		ei
 	#endasm
-}
-
-void init_sprites(void)
-{
-	int i;
-
-	precalculate_shift_tables();
-
-	for(i=0; i<0x1800; i++)
-	{
-		if(i & 0x20)
-		{
-			background_vdisplay_bin_buff[i] = 0x55;
-	  		vdisplay_bin_buff[i] = 0x55;
-		}
-		else
-		{
-			background_vdisplay_bin_buff[i] = 0xaa;
-	  		vdisplay_bin_buff[i] = 0xaa;
-		}
-	}
 }
