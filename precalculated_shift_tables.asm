@@ -1,0 +1,7 @@
+SECTION s_precalculated_shift_tables
+
+ORG 0xF000
+
+PUBLIC _precalculated_shift_tables
+
+_precalculated_shift_tables: DEFS 0x1000

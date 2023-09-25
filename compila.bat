@@ -1,0 +1,1 @@
+zcc +zx  -m -create-app .\isometricos_tests.c .\sprites_mask_tests.c .\precalculated_shift_tables.asm
