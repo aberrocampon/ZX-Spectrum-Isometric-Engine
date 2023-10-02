@@ -130,9 +130,9 @@ byte graph_bin_def_block[] =
 		0x00, 0xFF, 0x00, 0xFE, 0x00, 0x7F, 0x00, 0xFF
 	};
 
-byte graph_bin_def_ghost_ld[] =
+byte graph_bin_def_ghost[] =
 	{
-		// frame 0
+		// frame 0-0. Direccion sur-oeste
 		SPRITE_GRAPHIC_STATE_FLIPPED_LEFT, // graphic state mask
 		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
 		0x00, 0xFF, 0x3C, 0x00, 0x00, 0xFF,
@@ -154,7 +154,7 @@ byte graph_bin_def_ghost_ld[] =
 		0x00, 0xFE, 0x3F, 0x00, 0x00, 0x7F,
 		0x00, 0xFF, 0x1E, 0xC0, 0x00, 0xFF,
 		0x00, 0xFF, 0x00, 0xE1, 0x00, 0xFF,
-		// frame 1
+		// frame 0-1. Direccion sur-oeste
 		SPRITE_GRAPHIC_STATE_FLIPPED_LEFT, // graphic state mask
 		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
 		0x00, 0xFE, 0x3C, 0x00, 0x00, 0x7F,
@@ -175,7 +175,51 @@ byte graph_bin_def_ghost_ld[] =
 		0x00, 0xF8, 0x1E, 0xC0, 0x00, 0xC7,
 		0x00, 0xFF, 0x1C, 0xC1, 0x00, 0xFF,
 		0x00, 0xFF, 0x00, 0xE3, 0x00, 0xFF,
-		0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF
+		0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF,
+		// frame 1-0. Direccion nor-este
+		SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT, // graphic state mask
+		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
+		0x00, 0xFF, 0x3C, 0x00, 0x00, 0xFF,
+		0x00, 0xFE, 0xFF, 0x00, 0x00, 0x7F,
+		0x01, 0xFC, 0xFF, 0x00, 0x80, 0x3F,
+		0x01, 0xFC, 0xFF, 0x00, 0xC0, 0x1F,
+		0x03, 0xF8, 0xFF, 0x00, 0x20, 0x0F,
+		0x03, 0xF8, 0xFF, 0x00, 0x20, 0x0F,
+		0x07, 0xF0, 0xFF, 0x00, 0x50, 0x07,
+		0x07, 0xF0, 0xFF, 0x00, 0x98, 0x03,
+		0x0F, 0xE0, 0xFF, 0x00, 0xF8, 0x03,
+		0x1F, 0xC0, 0xFF, 0x00, 0xFC, 0x01,
+		0x3F, 0x80, 0xFF, 0x00, 0xFE, 0x00,
+		0x7F, 0x00, 0xFF, 0x00, 0xFE, 0x00,
+		0x7F, 0x00, 0xFF, 0x00, 0xFC, 0x01,
+		0x3F, 0x80, 0xFF, 0x00, 0xF0, 0x03,
+		0x0F, 0xC0, 0xFF, 0x00, 0xF0, 0x07,
+		0x07, 0xF0, 0xFF, 0x00, 0xF0, 0x07,
+		0x03, 0xF8, 0x1F, 0x00, 0x00, 0x0F,
+		0x00, 0xFC, 0x06, 0xE0, 0x00, 0xFF,
+		0x00, 0xFF, 0x00, 0xF9, 0x00, 0xFF,
+		// frame 1-1. Direccion nor-este
+		SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT, // graphic state mask
+		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
+		0x00, 0xFF, 0x3C, 0x00, 0x00, 0xFF,
+		0x00, 0xFE, 0xFF, 0x00, 0x00, 0x7F,
+		0x01, 0xFC, 0xFF, 0x00, 0x80, 0x3F,
+		0x01, 0xFC, 0xFF, 0x00, 0xC0, 0x1F,
+		0x03, 0xF8, 0xFF, 0x00, 0x20, 0x0F,
+		0x03, 0xF8, 0xFF, 0x00, 0x20, 0x0F,
+		0x07, 0xF0, 0xFF, 0x00, 0x50, 0x07,
+		0x07, 0xF0, 0xFF, 0x00, 0x98, 0x03,
+		0x0F, 0xE0, 0xFF, 0x00, 0xF8, 0x03,
+		0x1F, 0xC0, 0xFF, 0x00, 0xFC, 0x01,
+		0x3F, 0x80, 0xFF, 0x00, 0xFE, 0x00,
+		0x7F, 0x00, 0xFF, 0x00, 0xFE, 0x00,
+		0x3F, 0x80, 0xFF, 0x00, 0xFC, 0x01,
+		0x0F, 0xC0, 0xFF, 0x00, 0xF8, 0x03,
+		0x0F, 0xE0, 0x3F, 0x00, 0xF8, 0x03,
+		0x1E, 0xC0, 0x3F, 0x80, 0x30, 0x07,
+		0x00, 0xE1, 0x3F, 0x80, 0x00, 0x0F,
+		0x00, 0xFF, 0x1E, 0xC0, 0x00, 0xFF,
+		0x00, 0xFF, 0x00, 0xE1, 0x00, 0xFF
 	};
 
 t_sprite_graphic_def spr_graph_def_block = 
@@ -187,13 +231,13 @@ t_sprite_graphic_def spr_graph_def_block =
 		graph_bin_def_block
 	};
 
-t_sprite_graphic_def spr_graph_def_ghost_d = 
+t_sprite_graphic_def spr_graph_def_ghost = 
 	{	
 		3, 20, // 4x character cells in width, 28 scan lines in height
 		-11, -9,
 		120 + 1,
-		2*(120 + 1),
-		graph_bin_def_ghost_ld
+		4*(120 + 1),
+		graph_bin_def_ghost
 	};
 
 t_isometric_obj isometric_block_0 =
@@ -295,6 +339,13 @@ void get_keys(void)
 }
 
 int x, y, z;
+#define ISOMETRIC_ORIENTATION_MASK_NS (1)
+#define ISOMETRIC_ORIENTATION_N (0)
+#define ISOMETRIC_ORIENTATION_S (1)
+#define ISOMETRIC_ORIENTATION_MASK_EW (2)
+#define ISOMETRIC_ORIENTATION_E (0)
+#define ISOMETRIC_ORIENTATION_W (2)
+byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
 
 void main()
 {
@@ -304,7 +355,7 @@ void main()
 	sprite_transfer_vdisplay();
 
 	sprite_set_graphic_def(&isometric_block_0.sprite, &spr_graph_def_block, 0, spr_graph_def_block.total_frames_size);
-	sprite_set_graphic_def(&isometric_block_1.sprite, &spr_graph_def_ghost_d, 0, spr_graph_def_ghost_d.total_frames_size);
+	sprite_set_graphic_def(&isometric_block_1.sprite, &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size); // direccion sur-oeste
 
 	// En estos momentos (18-09-2023) se observa aprox con 10 sprites en el bucle while(1)
 	// 256 refrescos en 22 segundos =>
@@ -321,7 +372,7 @@ void main()
 
 		get_keys();
 
-		if(k_t) isometric_block_1.sprite.required_graphic_state ^= SPRITE_GRAPHIC_STATE_FLIPPED_LEFT; //break;
+		if(k_t) break;
 
 		x = isometric_block_1.box_pos_x;
 		y = isometric_block_1.box_pos_y;
@@ -330,25 +381,61 @@ void main()
 		if(k_1) 
 		{
 			--y;
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
+			{
+				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W;
+				sprite_set_frames_subset(&(isometric_block_1.sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
+				isometric_block_1.sprite.required_graphic_state = (isometric_block_1.sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
+			}
+			else
+			{
+				if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			}
 		}
 
 		if(k_q)
 		{
 			++y;
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
+			{
+				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E;
+				sprite_set_frames_subset(&(isometric_block_1.sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
+				isometric_block_1.sprite.required_graphic_state = (isometric_block_1.sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+			}
+			else
+			{
+				if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			}
 		}
 
 		if(k_2)
 		{
 			--x;
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
+			{
+				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E;
+				sprite_set_frames_subset(&(isometric_block_1.sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
+				isometric_block_1.sprite.required_graphic_state = (isometric_block_1.sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+			}
+			else
+			{
+				if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			}
 		}
 
 		if(k_3) 
 		{
 			++x;
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
+			{
+				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
+				sprite_set_frames_subset(&(isometric_block_1.sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
+				isometric_block_1.sprite.required_graphic_state = (isometric_block_1.sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
+			}
+			else
+			{
+				if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
+			}
 		}
 
 		if(k_4) 

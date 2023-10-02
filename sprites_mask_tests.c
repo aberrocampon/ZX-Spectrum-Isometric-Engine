@@ -83,8 +83,6 @@ void sprite_set_frames_subset(t_sprite *psprite, t_sprite_graphic_def *psprite_g
 {
 	psprite->first_frame = psprite->actual_frame = (psprite_graphdef->graphic_bin_def) + first_frane_offset;
 	psprite->last_frame = (psprite_graphdef->graphic_bin_def) + last_frane_offset;
-
-	psprite->required_graphic_state = *(psprite->actual_frame);
 }
 
 void sprite_next_frame(t_sprite *psprite)
@@ -113,7 +111,7 @@ byte half_width;
 
 void sprite_flip_h(void)
 {
-
+	// Tamaño en byte: 160 bytes
 	#asm
 		di
 		ld (_guarda_sp), sp
@@ -299,15 +297,21 @@ void sprite_draw(t_sprite *psprite)
 
 	width = psprite->width;
 	height = psprite->height;
-	p_gbd = psprite->actual_frame + 1;
+	p_gbd = psprite->actual_frame;
 
-	// actualizar al fipado horizontal requerido
+	// actualizar al fipado horizontal requerido /////////////
 	aux = (psprite->required_graphic_state) & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H;
-	if( aux != (*(psprite->actual_frame) & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) )
+	if( aux != (*p_gbd & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) )
 	{
-		*(psprite->actual_frame) = (*(psprite->actual_frame) & ~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) | aux;
+		*p_gbd = (*p_gbd & ~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) | aux;
+		p_gbd++;
 		sprite_flip_h();
 	}
+	else
+	{
+		p_gbd++;
+	}
+	/////////////////////////////////////////////////////////
 
 	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
 	p_shift_table_high = 0xf0 | (((psprite->pos_x)&7)<<1);
