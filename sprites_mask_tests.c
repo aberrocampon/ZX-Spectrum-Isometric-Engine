@@ -3,7 +3,31 @@
 unsigned char background_vdisplay_bin_buff[192*32]; // buffer imagen binaria
 unsigned char vdisplay_bin_buff[192*32 + 1]; // buffer imagen binaria
 
+extern byte precalculated_flip_byte_table[]; // en direccion 0xEF00, tabla de 256 bytes para invertir el orden de los bits de un byte
 extern byte precalculated_shift_tables[]; // en direccion 0xF000, las tables ocupan 4Kb al final de la memoria
+
+void precalculate_flip_byte_table(void)
+{
+	byte* p;
+	byte valor, valor_bits_invertidos;
+	byte i;
+
+	p = precalculated_flip_byte_table;
+
+	for(valor = 0; valor < 255; valor++)
+	{
+		for(i=0, valor_bits_invertidos=0; i<8; i++)
+		{
+			if(valor & (1<<i))
+			{
+				valor_bits_invertidos |= (1<<(7-i));
+			}
+		}
+		*p++ = valor_bits_invertidos;
+	}
+
+	*p = 255;
+}
 
 void precalculate_shift_tables(void)
 {
@@ -27,6 +51,7 @@ void sprite_init(void)
 {
 	int i;
 
+	precalculate_flip_byte_table();
 	precalculate_shift_tables();
 
 	for(i=0; i<0x1800; i++)
@@ -48,6 +73,8 @@ void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_gra
 {
 	psprite->width = psprite_graphdef->width;
 	psprite->height = psprite_graphdef->height;
+	psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
+	psprite->delta_sprite_y = psprite_graphdef->delta_sprite_y;
 	psprite->frame_size = psprite_graphdef->frame_size;
 	sprite_set_frames_subset(psprite, psprite_graphdef, first_frane_offset, last_frane_offset);
 }
@@ -56,6 +83,8 @@ void sprite_set_frames_subset(t_sprite *psprite, t_sprite_graphic_def *psprite_g
 {
 	psprite->first_frame = psprite->actual_frame = (psprite_graphdef->graphic_bin_def) + first_frane_offset;
 	psprite->last_frame = (psprite_graphdef->graphic_bin_def) + last_frane_offset;
+
+	psprite->required_graphic_state = *(psprite->actual_frame);
 }
 
 void sprite_next_frame(t_sprite *psprite)
@@ -80,6 +109,189 @@ int incr_v_ptr_disp;
 int iWidth;
 byte mask_start_array[] = {0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 byte mask_end_array[] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x7, 0x03, 0x01};
+byte half_width;
+
+void sprite_flip_h(void)
+{
+
+	#asm
+		di
+		ld (_guarda_sp), sp
+
+		ld hl, (_p_gbd)
+		ld a, (_width)
+		ld c, a
+		dec c
+		ld b, 0
+		add hl, bc
+		add hl, bc
+		ld d, 0xef ; tabla de inversion de orden de bit de un byte en direccion 0xe000
+		exx
+		ld hl, (_p_gbd)
+		ld d, 0xef ; tabla de inversion de orden de bit de un byte en direccion 0xe000
+		ld a, (_width)
+		rra
+		ld (_half_width), a
+		jr nc, l_sprite_flip_h_1
+		; en cada linea del bitmap una cantidad impar de parejas byte / mascara
+		rla
+		inc a
+		ld ixl, a ; incremento al puntero de la parte izquierda en cada salto de linea
+		dec a
+		ld ixh, a
+		add a, ixh
+		add a, ixh
+		dec a
+		ld ixh, a		
+		jr l_sprite_flip_h_2
+
+	l_sprite_flip_h_1:
+		; en cada linea del bitmap una cantidad par de parejas byte / mascara
+		rla
+		ld ixl, a ; incremento al puntero de la parte izquierda en cada salto de linea
+		add a, ixl
+		add a, ixl
+		ld ixh, a
+	l_sprite_flip_h_2:
+		ld a, (_half_width)
+		ex af, af
+		ld a, (_height)
+
+	; En el bucle, por linea del bitmap:
+	; hl  : byte izquierdo de la linea actual del bitmap (el siguiente byte es su mascara)
+	; hl_alt : byte derecho de la linea actual del bitmap (el siguiente byte es su mascara)
+	; d y d_alt : Byte alto de la direccion de la tabla de flipado de byte precalculada (invierte orden de bits)
+	; a : numero de parejas bytes + mascara de una linea del bitmap / 2. Si es impar hay que flipar luego el byte central y mascara
+	; a_alt numero de lineas de bitmap
+	l_sprite_flip_h_3:
+		ex af, af
+	l_sprite_flip_h_4:
+		ld sp, hl                  ; 6
+		pop bc                     ; 10
+		inc hl                     ; 6
+		inc hl                     ; 6
+		ex de, hl                  ; 4
+		ld l, c                    ; 4
+		ld c, (hl)                 ; 7
+		ld l, b                    ; 4
+		ld b, (hl)                 ; 7
+		ex de, hl                  ; 4
+
+		exx                        ; 4
+		ld sp, hl                  ; 6
+		pop bc                     ; 10
+		dec hl                     ; 6
+		dec hl                     ; 6
+		ex de, hl                  ; 4
+		ld l, c                    ; 4
+		ld c, (hl)                 ; 7
+		ld l, b                    ; 4
+		ld b, (hl)                 ; 7
+		ex de, hl                  ; 4
+
+		exx                        ; 4
+		push bc                    ; 11
+		ld sp, hl                  ; 6
+
+		exx                        ; 4
+		push bc                    ; 11
+
+		exx                        ; 4
+
+		dec a                      ; 4
+		jr nz, l_sprite_flip_h_4   ; 12 / 7  ; total =  176 t-states en bucle que se repite
+
+		ld b, 0
+		ld c, ixl
+        add hl, bc
+		exx
+		ld b, 0
+		ld c, ixh
+		add hl, bc
+		exx
+		ld a, (_half_width)
+		ex af, af
+		dec a
+		jr nz, l_sprite_flip_h_3
+		
+		ld a, (_width)
+		rra
+		jr nc, l_sprite_flip_h_6
+		; el numero de parejas byte / mascara en cada linea es impar, luego hay una colunna central que no ha sido flipada aun
+		ld hl, (_p_gbd)
+		rla
+		ld c, a
+		dec c
+		add hl, bc
+		ld sp, hl
+		ex de, hl
+		add a, a
+		exx
+		ld e, a
+		ld d, 0
+		ld a, (_height)
+		ld b, a
+	l_sprite_flip_h_5:
+		exx
+		pop bc
+		ld l, c
+		ld c, (hl)
+		ld l, b
+		ld b, (hl)
+		push bc
+		exx
+		ld h, d
+		ld l, e
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_flip_h_5
+
+	l_sprite_flip_h_6:
+		ld sp, (_guarda_sp)
+		ei
+
+	#endasm
+
+/*
+	// alternativa
+	#asm
+	; bucle flipando bytes no buts
+	l_sprite_flip_h_2:
+		ld sp, hl                       ; 6
+		pop bc                          ; 10
+		inc hl                          ; 6
+		inc hl                          ; 6
+		exx                             ; 4
+		ldi                             ; 16
+		ldi                             ; 16
+		ld sp, hl                       ; 6
+		dec hl                          ; 6
+		dec hl                          ; 6
+		dec hl                          ; 6
+		dec hl                          ; 6
+		exx                             ; 4
+		push bc                         ; 11
+		dec a                           ; 4
+		jr nz, l_sprite_flip_h_2        ; 12 / 7   Total = 125 con repeticion de bucle
+
+	; siguiente bucle flipando los bits de cada byte
+	l_sprite_flip_h_3:
+		exx                            ; 4
+		pop bc                         ; 10
+		ld h, a                        ; 4
+		ld l, c                        ; 4
+		ld c, 1                        ; 7
+		ldi                            ; 16
+		ld h, a                        ; 4
+		ld l, b                        ; 4
+		ldi                            ; 16
+		exx                            ; 4
+		djnz l_sprite_flip_h_3         13 / 8  Total = 86 con repeticion
+
+	#endasm
+*/
+
+}
 
 void sprite_draw(t_sprite *psprite)
 {	
@@ -87,7 +299,16 @@ void sprite_draw(t_sprite *psprite)
 
 	width = psprite->width;
 	height = psprite->height;
-	p_gbd = psprite->actual_frame;
+	p_gbd = psprite->actual_frame + 1;
+
+	// actualizar al fipado horizontal requerido
+	aux = (psprite->required_graphic_state) & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H;
+	if( aux != (*(psprite->actual_frame) & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) )
+	{
+		*(psprite->actual_frame) = (*(psprite->actual_frame) & ~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) | aux;
+		sprite_flip_h();
+	}
+
 	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
 	p_shift_table_high = 0xf0 | (((psprite->pos_x)&7)<<1);
 	mask_start = mask_start_array[(psprite->pos_x)&7];
@@ -111,7 +332,7 @@ void sprite_draw(t_sprite *psprite)
 		ld b, a
 
 		ld a, (_mask_start)
-		ex af, af'
+		ex af, af
 		xor a
 
 ;// En el bucle:
@@ -131,7 +352,7 @@ void sprite_draw(t_sprite *psprite)
 		
 		ld l, b                   ;// 4
 		ld b, a                   ;// 4
-		ex af, af'                ;// 4
+		ex af, af                 ;// 4
 		or (hl)                   ;// 7
 				
 		ex de, hl                 ;// 4
@@ -143,7 +364,7 @@ void sprite_draw(t_sprite *psprite)
 	
 		inc h                     ;// 4
 		ld a, (hl)                ;// 7
-		ex af, af'                ;// 4
+		ex af, af                 ;// 4
 		ld l, c                   ;// 4
 		ld a, (hl)                ;// 7
 		dec h                     ;// 4
@@ -157,7 +378,7 @@ void sprite_draw(t_sprite *psprite)
 		ld b, a                     ; 4
 		ld a, (_mask_end)           ; 13
 		ld c, a                     ; 4
-		ex af, af'                  ; 4
+		ex af, af                   ; 4
 		or c                        ; 4
 		ex de,hl                    ; 4
 		and (hl)                    ; 7
@@ -168,7 +389,7 @@ void sprite_draw(t_sprite *psprite)
 		ex de, hl                   ; 4
 
 		ld a, (_mask_start)         ; 13
-		ex af, af'                  ; 4
+		ex af, af                   ; 4
 		xor a                       ; 4
 		
 		exx                         ; 4
@@ -237,11 +458,13 @@ void sprite_update_display(t_sprite *psprite)
 	incr_v_ptr_disp = 32 - iWidth;
 
 	#asm
+		di
+
 		ld hl, (_p_vdisp)
 		ld de, (_p_disp)
 		ld a, (_height)
 	l_update_display_sprite_1:
-		ex af, af'
+		ex af, af
 		ld bc, (_iWidth)
 		ldir
 		ld bc, (_incr_v_ptr_disp)
@@ -260,9 +483,11 @@ void sprite_update_display(t_sprite *psprite)
 		ld d, a
 	l_update_display_sprite_2:
 	    ld (_p_disp), de
-		ex af, af'
+		ex af, af
 		dec a
 		jr nz, l_update_display_sprite_1
+
+		ei
 
 	#endasm
 }
@@ -279,6 +504,8 @@ void sprite_restore_vdisplay(t_sprite *psprite)
 	incr_v_ptr_disp = 32 - iWidth;
 
 	#asm
+		di
+
 		ld hl, (_p_disp)                               ; 16
 		ld de, (_p_vdisp)                              ; 20
 		ld a, (_height)                                ; 13
@@ -292,6 +519,8 @@ void sprite_restore_vdisplay(t_sprite *psprite)
 		ex de,hl                                       ; 4
 		dec a                                          ; 4
 		jr nz, l_restore_vdisplay_sprite_1             ; 12/7
+
+		ei
 
 	#endasm
 }
@@ -369,7 +598,7 @@ void sprite_transfer_and_restore_vdisplay(void)
 		ld de, 0x4000
 		ld a, 192
 	l_transfer_and_restore_vdisplay_1:
-		ex af, af'
+		ex af, af
 		;; 2 bytes ;;;;;
 		pop bc                     ; 10
 		ld a, (hl)                 ; 7
@@ -593,7 +822,7 @@ void sprite_transfer_and_restore_vdisplay(void)
 		sub 8
 		ld d, a
 	l_transfer_and_restore_vdisplay_2:
-		ex af, af'
+		ex af, af
 		dec a
 		jp nz, l_transfer_and_restore_vdisplay_1
 

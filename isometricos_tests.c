@@ -15,7 +15,7 @@
 
 typedef struct
 {
-	// posicion 3d del vertice inferior-izquierdo de la caja que contiene la forma
+	// posicion 3d origen es el vertice del plano inferior y con menor x e y de la caja que contiene la forma
 	byte box_pos_x;
 	byte box_pos_y;
 	byte box_pos_z;
@@ -23,10 +23,6 @@ typedef struct
 	byte box_width_x;
 	byte box_width_y;
 	byte box_height;
-	// distancia en 2d entre el vertice inf-izq de la caja de contencion 
-	// y la esquina sup-izq del sprite 2d 
-	byte delta_sprite_x;
-	byte delta_sprite_y; 
 	// sprite grafico
 	t_sprite sprite;
 } t_isometric_obj;
@@ -57,13 +53,13 @@ void isometric_proj_obj(t_isometric_obj *p_isometric_obj)
 				isometric_origen_proj_x -
 				p_isometric_obj->box_pos_x + 
 				p_isometric_obj->box_pos_y +
-				p_isometric_obj->delta_sprite_x;
+				p_isometric_obj->sprite.delta_sprite_x;
 	p_isometric_obj->sprite.pos_y = 
 				isometric_origen_proj_y +
 				((p_isometric_obj->box_pos_x)>>1) + 
 				((p_isometric_obj->box_pos_y)>>1) -
 				p_isometric_obj->box_pos_z +
-				p_isometric_obj->delta_sprite_y;
+				p_isometric_obj->sprite.delta_sprite_y;
 }
 
 #define reset_isometric_objects_ordering() {n_ordered_isometric_objects = 0;}
@@ -103,6 +99,7 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 // imagen binaria y mascara en bytes alternos
 byte graph_bin_def_block[] =
 	{
+		SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT, // graphic state mask
 		0x00, 0xFF, 0x00, 0xFE, 0x00, 0x7F, 0x00, 0xFF,
 		0x00, 0xFF, 0x01, 0xF8, 0x80, 0x1F, 0x00, 0xFF,
 		0x00, 0xFF, 0x07, 0xE0, 0xE0, 0x07, 0x00, 0xFF,
@@ -136,6 +133,7 @@ byte graph_bin_def_block[] =
 byte graph_bin_def_ghost_ld[] =
 	{
 		// frame 0
+		SPRITE_GRAPHIC_STATE_FLIPPED_LEFT, // graphic state mask
 		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
 		0x00, 0xFF, 0x3C, 0x00, 0x00, 0xFF,
 		0x00, 0xFE, 0xFF, 0x00, 0x00, 0x7F,
@@ -157,6 +155,7 @@ byte graph_bin_def_ghost_ld[] =
 		0x00, 0xFF, 0x1E, 0xC0, 0x00, 0xFF,
 		0x00, 0xFF, 0x00, 0xE1, 0x00, 0xFF,
 		// frame 1
+		SPRITE_GRAPHIC_STATE_FLIPPED_LEFT, // graphic state mask
 		0x00, 0xFF, 0x00, 0xC3, 0x00, 0xFF,
 		0x00, 0xFE, 0x3C, 0x00, 0x00, 0x7F,
 		0x01, 0xFC, 0xFF, 0x00, 0x80, 0x1F,
@@ -182,16 +181,18 @@ byte graph_bin_def_ghost_ld[] =
 t_sprite_graphic_def spr_graph_def_block = 
 	{	
 		4, 28, // 4x character cells in width, 28 scan lines in height
-		224,
-		224,
+		-15, -11,
+		224 + 1,
+		224 + 1,
 		graph_bin_def_block
 	};
 
 t_sprite_graphic_def spr_graph_def_ghost_d = 
 	{	
 		3, 20, // 4x character cells in width, 28 scan lines in height
-		120,
-		240,
+		-11, -9,
+		120 + 1,
+		2*(120 + 1),
 		graph_bin_def_ghost_ld
 	};
 
@@ -203,10 +204,10 @@ t_isometric_obj isometric_block_0 =
 		14,
 		15,
 		11,
-		-15,
-		-11,
 		{
+			0, // graphic state mask
 			0, 0,
+			0, 0, // deltax, deltay
 			0, 255, // ultima posicion en que fue dibujado
 			0, 0, // posicion para actualizar buffer de display visible
 			0, 0, // ancho y alto para actualizar buffer de display visible
@@ -226,10 +227,10 @@ t_isometric_obj isometric_block_1 =
 		10,
 		11,
 		9,
-		-11,
-		-9,
 		{
+			0, // graphic state mask
 			0, 0,
+			0, 0, // deltax, deltay
 			0, 255, // ultima posicion en que fue dibujado
 			0, 0, // posicion para actualizar buffer de display visible
 			0, 0, // ancho y alto para actualizar buffer de display visible
@@ -320,7 +321,7 @@ void main()
 
 		get_keys();
 
-		if(k_t) break;
+		if(k_t) isometric_block_1.sprite.required_graphic_state ^= SPRITE_GRAPHIC_STATE_FLIPPED_LEFT; //break;
 
 		x = isometric_block_1.box_pos_x;
 		y = isometric_block_1.box_pos_y;
@@ -417,7 +418,7 @@ void main()
 		//draw_sprite(isometric_block_0.psprite);
 		//draw_sprite(isometric_block_1.psprite);
 
-		//transfer_vdisplay();
+		//sprite_transfer_vdisplay();
 		//continue;
 
 		sprite_update_display(&(isometric_block_0.sprite));

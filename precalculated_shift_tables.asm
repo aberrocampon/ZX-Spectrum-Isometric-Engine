@@ -1,7 +1,9 @@
 SECTION s_precalculated_shift_tables
 
-ORG 0xF000
 
 PUBLIC _precalculated_shift_tables
+PUBLIC _precalculated_flip_byte_table
 
+ORG 0xEF00
+_precalculated_flip_byte_table: DEFS 256
 _precalculated_shift_tables: DEFS 0x1000
