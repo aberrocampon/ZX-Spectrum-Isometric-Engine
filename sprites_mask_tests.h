@@ -12,7 +12,7 @@ typedef struct
 {
 	byte required_graphic_state; // flipping state of the bitmap for example
 	byte pos_x, pos_y;
-	// distancia en 2d entre el vertice origen 3d
+	// distancia en 2d entre el vertice origen 3d (vertice de mayor x, y, z en caja de contencion)
 	// y la esquina sup-izq del sprite 2d 
 	byte delta_sprite_x;
 	byte delta_sprite_y; 

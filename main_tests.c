@@ -10,89 +10,7 @@
 
 #include <stdlib.h>
 
-#include "sprites_mask_tests.h"
-#include "value_types.h"
-
-typedef struct
-{
-	// posicion 3d origen es el vertice del plano inferior y con menor x e y de la caja que contiene la forma
-	byte box_pos_x;
-	byte box_pos_y;
-	byte box_pos_z;
-	// dimensiones de la caja de contencion
-	byte box_width_x;
-	byte box_width_y;
-	byte box_height;
-	// sprite grafico
-	t_sprite sprite;
-} t_isometric_obj;
-
-#define ISOMETRIC_ORIGEN_PROJ_X 128
-#define ISOMETRIC_ORIGEN_PROJ_Y 64
-
-#define ISOMETRIC_MAX_X_3D 125
-#define ISOMETRIC_MAX_Y_3D 125
-#define ISOMETRIC_MAX_Z_3D 60
-
-byte isometric_origen_proj_x = ISOMETRIC_ORIGEN_PROJ_X;
-byte isometric_origen_proj_y = ISOMETRIC_ORIGEN_PROJ_Y;
-
-byte isometric_max_x_3d = ISOMETRIC_MAX_X_3D;
-byte isometric_max_y_3d = ISOMETRIC_MAX_Y_3D;
-byte isometric_max_z_3d = ISOMETRIC_MAX_Z_3D;
-
-#define N_MAX_ORDERED_ISOMETRIC_OBJECTS 16
-
-int height_over_proj_plane[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
-t_isometric_obj *ordered_isometric_objects_table[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
-byte n_ordered_isometric_objects = 0;
-
-void isometric_proj_obj(t_isometric_obj *p_isometric_obj)
-{
-	p_isometric_obj->sprite.pos_x = 
-				isometric_origen_proj_x -
-				p_isometric_obj->box_pos_x + 
-				p_isometric_obj->box_pos_y +
-				p_isometric_obj->sprite.delta_sprite_x;
-	p_isometric_obj->sprite.pos_y = 
-				isometric_origen_proj_y +
-				((p_isometric_obj->box_pos_x)>>1) + 
-				((p_isometric_obj->box_pos_y)>>1) -
-				p_isometric_obj->box_pos_z +
-				p_isometric_obj->sprite.delta_sprite_y;
-}
-
-#define reset_isometric_objects_ordering() {n_ordered_isometric_objects = 0;}
-
-void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
-{
-	int i;
-	int ordered_index;
-	int height;
-
-	if(n_ordered_isometric_objects >= N_MAX_ORDERED_ISOMETRIC_OBJECTS) return;
-
-	height = p_isometric_obj->box_pos_x + p_isometric_obj->box_pos_y + p_isometric_obj->box_pos_z;
-
-	for(i = (n_ordered_isometric_objects - 1); i >= 0; i--)
-	{
-		if(height_over_proj_plane[i] < height) break;
-	}
-
-	ordered_index = i + 1;
-
-	i = 0; // compiler bug !!!
-	for(i = n_ordered_isometric_objects; i > ordered_index; i--)
-	{
-		height_over_proj_plane[i] = height_over_proj_plane[i - 1];
-		ordered_isometric_objects_table[i] = ordered_isometric_objects_table[i - 1];
-	}
-
-	ordered_isometric_objects_table[ordered_index] = p_isometric_obj;
-	height_over_proj_plane[ordered_index] = height;
-
-	n_ordered_isometric_objects++;
-}
+#include "isometric_system_tests.h"
 
 /*******************************************************************************************************/
 
@@ -225,7 +143,7 @@ byte graph_bin_def_ghost[] =
 t_sprite_graphic_def spr_graph_def_block = 
 	{	
 		4, 28, // 4x character cells in width, 28 scan lines in height
-		-15, -11,
+		-15, -13,
 		224 + 1,
 		224 + 1,
 		graph_bin_def_block
@@ -234,7 +152,7 @@ t_sprite_graphic_def spr_graph_def_block =
 t_sprite_graphic_def spr_graph_def_ghost = 
 	{	
 		3, 20, // 4x character cells in width, 28 scan lines in height
-		-11, -9,
+		-11, -10,
 		120 + 1,
 		4*(120 + 1),
 		graph_bin_def_ghost
@@ -242,12 +160,13 @@ t_sprite_graphic_def spr_graph_def_ghost =
 
 t_isometric_obj isometric_block_0 =
 	{
-		30,
-		30,
-		20,
-		14,
-		15,
-		11,
+		{
+			{
+				30, 30, 50,
+				8, 8, 6
+			},
+			0, 0, 0
+		},
 		{
 			0, // graphic state mask
 			0, 0,
@@ -265,12 +184,13 @@ t_isometric_obj isometric_block_0 =
 
 t_isometric_obj isometric_block_1 =
 	{
-		15,
-		80,
-		0,
-		10,
-		11,
-		9,
+		{
+			{
+				30, 30, 20,
+				6, 6, 5
+			},
+			0, 0, 0
+		},
 		{
 			0, // graphic state mask
 			0, 0,
@@ -338,13 +258,6 @@ void get_keys(void)
 	}
 }
 
-int x, y, z;
-#define ISOMETRIC_ORIENTATION_MASK_NS (1)
-#define ISOMETRIC_ORIENTATION_N (0)
-#define ISOMETRIC_ORIENTATION_S (1)
-#define ISOMETRIC_ORIENTATION_MASK_EW (2)
-#define ISOMETRIC_ORIENTATION_E (0)
-#define ISOMETRIC_ORIENTATION_W (2)
 byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
 
 void main()
@@ -356,6 +269,10 @@ void main()
 
 	sprite_set_graphic_def(&isometric_block_0.sprite, &spr_graph_def_block, 0, spr_graph_def_block.total_frames_size);
 	sprite_set_graphic_def(&isometric_block_1.sprite, &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size); // direccion sur-oeste
+
+	init_phys_box3d_step();
+	phys_box3d_add_object(&isometric_block_0.physics);
+	phys_box3d_add_object(&isometric_block_1.physics);
 
 	// En estos momentos (18-09-2023) se observa aprox con 10 sprites en el bucle while(1)
 	// 256 refrescos en 22 segundos =>
@@ -374,13 +291,11 @@ void main()
 
 		if(k_t) break;
 
-		x = isometric_block_1.box_pos_x;
-		y = isometric_block_1.box_pos_y;
-		z= isometric_block_1.box_pos_z;
+		isometric_block_1.physics.speed_y = 0;
 
 		if(k_1) 
 		{
-			--y;
+			isometric_block_1.physics.speed_y = -1;
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W;
@@ -395,7 +310,7 @@ void main()
 
 		if(k_q)
 		{
-			++y;
+			isometric_block_1.physics.speed_y = 1;
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E;
@@ -408,9 +323,11 @@ void main()
 			}
 		}
 
+		isometric_block_1.physics.speed_x = 0;
+
 		if(k_2)
 		{
-			--x;
+			isometric_block_1.physics.speed_x = -1;
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E;
@@ -425,7 +342,7 @@ void main()
 
 		if(k_3) 
 		{
-			++x;
+			isometric_block_1.physics.speed_x = 1;
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
@@ -438,49 +355,21 @@ void main()
 			}
 		}
 
+		//isometric_block_1.physics.speed_z = 0;
+
 		if(k_4) 
 		{
-			++z;
+			isometric_block_1.physics.speed_z = 1;
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 
 		if(k_5) 
 		{
-			--z;
+			isometric_block_1.physics.speed_z = -1;
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 
-		if(x < 0)
-		{
-			x = 0;
-		}
-		if(x > isometric_max_x_3d - isometric_block_1.box_width_x)
-		{
-			x = isometric_max_x_3d - isometric_block_1.box_width_x;
-		}
-
-		
-		if(y < 0)
-		{
-			y = 0;
-		}
-		if(y > (int)(isometric_max_y_3d - isometric_block_1.box_width_y))
-		{
-			y = isometric_max_y_3d - isometric_block_1.box_width_y;
-		}
-
-		if(z < 0)
-		{
-			z = 0;
-		}
-		if(z > (int)(isometric_max_z_3d - isometric_block_1.box_height))
-		{
-			z = isometric_max_z_3d - isometric_block_1.box_height;
-		}
-
-		isometric_block_1.box_pos_x = x;
-		isometric_block_1.box_pos_y = y;
-		isometric_block_1.box_pos_z = z;
+		phys_box3d_step();
 
 
 		#asm
