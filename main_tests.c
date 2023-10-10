@@ -291,11 +291,15 @@ void main()
 
 		if(k_t) break;
 
-		isometric_block_1.physics.speed_y = 0;
+		if(!k_1 && !k_q && (isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)) isometric_block_1.physics.speed_y = 0;
 
 		if(k_1) 
 		{
-			isometric_block_1.physics.speed_y = -1;
+			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+			{
+				isometric_block_1.physics.speed_y = -1;
+			}
+
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W;
@@ -310,7 +314,11 @@ void main()
 
 		if(k_q)
 		{
-			isometric_block_1.physics.speed_y = 1;
+			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+			{
+				isometric_block_1.physics.speed_y = 1;
+			}
+
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E;
@@ -323,11 +331,15 @@ void main()
 			}
 		}
 
-		isometric_block_1.physics.speed_x = 0;
+		if(!k_2 && !k_3 && (isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)) isometric_block_1.physics.speed_x = 0;
 
 		if(k_2)
 		{
-			isometric_block_1.physics.speed_x = -1;
+			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+			{
+				isometric_block_1.physics.speed_x = -1;
+			}
+
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E;
@@ -342,7 +354,11 @@ void main()
 
 		if(k_3) 
 		{
-			isometric_block_1.physics.speed_x = 1;
+			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+			{
+				isometric_block_1.physics.speed_x = 1;
+			}
+
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
 			{
 				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
@@ -359,13 +375,17 @@ void main()
 
 		if(k_4) 
 		{
-			isometric_block_1.physics.speed_z = 1;
+			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+			{
+				isometric_block_1.physics.speed_z = 4;
+			}
+
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 
 		if(k_5) 
 		{
-			isometric_block_1.physics.speed_z = -1;
+			//isometric_block_1.physics.speed_z = -1;
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 

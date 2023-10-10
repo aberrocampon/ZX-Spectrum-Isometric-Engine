@@ -1,6 +1,8 @@
 #ifndef VALUE_TYPES_H
 #define VALUE_TYPES_H
 
+#define NULL ((void *)0)
+
 typedef unsigned char byte;
 typedef char int8;
 typedef struct
