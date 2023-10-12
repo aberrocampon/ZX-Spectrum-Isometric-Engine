@@ -44,6 +44,8 @@ extern byte isometric_max_x_3d;
 extern byte isometric_max_y_3d;
 extern byte isometric_max_z_3d;
 
+extern t_physics_box3d phys_box3d_room;
+
 extern byte n_phys_box3d_objects;
 
 #define init_phys_box3d_step() {n_phys_box3d_objects = 0;}

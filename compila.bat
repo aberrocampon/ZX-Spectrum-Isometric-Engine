@@ -1,1 +1,1 @@
-zcc +zx  -m -create-app .\main_tests.c .\isometric_system_tests.c .\\physics_box3d_tests.c .\sprites_mask_tests.c .\precalculated_shift_tables.asm
+zcc +zx  -m -create-app .\main_tests.c .\keyboard.c .\isometric_system_tests.c .\physics_box3d_tests.c .\sprites_mask_tests.c .\precalculated_shift_tables.asm

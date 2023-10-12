@@ -8,8 +8,7 @@
 
 #pragma output CRT_ORG_CODE          = 0x8000
 
-#include <stdlib.h>
-
+#include "keyboard.h"
 #include "isometric_system_tests.h"
 
 /*******************************************************************************************************/
@@ -208,56 +207,6 @@ t_isometric_obj isometric_block_1 =
 
 /*******************************************************************************************************/
 
-byte k_1, k_2, k_3, k_4, k_5, k_q, k_t;
-
-void get_keys(void)
-{
-	byte d;
-
-	 k_1 = k_2 = k_3 = k_4 = k_5 = k_q = k_t = 0;
-
-	d = inp(0xf7fe);
-	d ^= 0xff;
-
-	if(d & 0x1)
-	{
-		k_1 = 1;
-	}
-
-	if(d & 0x2)
-	{
-		k_3 = 1;
-	}
-
-	if(d & 0x4)
-	{
-		k_2 = 1;
-	}
-
-	if(d & 0x8)
-	{
-		k_4 = 1;
-	}
-
-	if(d & 0x10)
-	{
-		k_5 = 1;
-	}
-
-	d = inp(0xfbfe);
-	d ^= 0xff;
-
-	if(d & 0x1)
-	{
-		k_q = 1;
-	}
-
-	if(d & 0x10)
-	{
-		k_t = 1;
-	}
-}
-
 byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
 
 void main()
@@ -284,20 +233,16 @@ void main()
 	{
 		nframes++;
 
-		sprite_restore_vdisplay(&(isometric_block_0.sprite));
-		sprite_restore_vdisplay(&(isometric_block_1.sprite));
+		keyboard_readrow_54321();
+		keyboard_readrow_trewq();
 
-		get_keys();
+		if(keyboard_is_key_pressed_t()) break;
 
-		if(k_t) break;
-
-		if(!k_1 && !k_q && (isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)) isometric_block_1.physics.speed_y = 0;
-
-		if(k_1) 
+		if(keyboard_is_key_pressed_1()) 
 		{
 			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
 			{
-				isometric_block_1.physics.speed_y = -1;
+				isometric_block_1.physics.speed_y = isometric_block_1.physics.p_phys_obj_touching_d->speed_y - 1;
 			}
 
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
@@ -312,11 +257,11 @@ void main()
 			}
 		}
 
-		if(k_q)
+		if(keyboard_is_key_pressed_q())
 		{
 			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
 			{
-				isometric_block_1.physics.speed_y = 1;
+				isometric_block_1.physics.speed_y = isometric_block_1.physics.p_phys_obj_touching_d->speed_y + 1;
 			}
 
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
@@ -331,13 +276,11 @@ void main()
 			}
 		}
 
-		if(!k_2 && !k_3 && (isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)) isometric_block_1.physics.speed_x = 0;
-
-		if(k_2)
+		if(keyboard_is_key_pressed_3())
 		{
 			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
 			{
-				isometric_block_1.physics.speed_x = -1;
+				isometric_block_1.physics.speed_x = isometric_block_1.physics.p_phys_obj_touching_d->speed_x - 1;
 			}
 
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
@@ -352,11 +295,11 @@ void main()
 			}
 		}
 
-		if(k_3) 
+		if(keyboard_is_key_pressed_2()) 
 		{
 			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
 			{
-				isometric_block_1.physics.speed_x = 1;
+				isometric_block_1.physics.speed_x = isometric_block_1.physics.p_phys_obj_touching_d->speed_x + 1;
 			}
 
 			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
@@ -371,9 +314,7 @@ void main()
 			}
 		}
 
-		//isometric_block_1.physics.speed_z = 0;
-
-		if(k_4) 
+		if(keyboard_is_key_pressed_4()) 
 		{
 			if(isometric_block_1.physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
 			{
@@ -383,22 +324,15 @@ void main()
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 
-		if(k_5) 
+		if(keyboard_is_key_pressed_5()) 
 		{
-			//isometric_block_1.physics.speed_z = -1;
 			if(!(nframes & 7)) sprite_next_frame(&(isometric_block_1.sprite));
 		}
 
 		phys_box3d_step();
 
-
-		#asm
-			;halt
-		#endasm
-
-		//transfer_and_restore_vdisplay();
-
-		//continue;
+		sprite_restore_vdisplay(&(isometric_block_0.sprite));
+		sprite_restore_vdisplay(&(isometric_block_1.sprite));
 
 		isometric_proj_obj(&isometric_block_0);
 		isometric_proj_obj(&isometric_block_1);
@@ -411,11 +345,6 @@ void main()
 		{
 			sprite_draw(&(ordered_isometric_objects_table[i]->sprite));
 		}
-		//draw_sprite(isometric_block_0.psprite);
-		//draw_sprite(isometric_block_1.psprite);
-
-		//sprite_transfer_vdisplay();
-		//continue;
 
 		sprite_update_display(&(isometric_block_0.sprite));
 		sprite_update_display(&(isometric_block_1.sprite));

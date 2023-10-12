@@ -1,9 +1,21 @@
 
 #include "physics_box3d_tests.h"
 
+#define PHYS_BOX3D_GRAVITY_INTENSITY_MASK (7)
+#define PHYS_BOX3D_STATIC_FRICTION_MASK (7)
+
 byte isometric_max_x_3d = PHYS_BOX3D_MAX_X_3D_DEFFAULT;
 byte isometric_max_y_3d = PHYS_BOX3D_MAX_Y_3D_DEFFAULT;
 byte isometric_max_z_3d = PHYS_BOX3D_MAX_Z_3D_DEFFAULT;
+
+t_physics_box3d phys_box3d_room = 
+{
+    {
+        PHYS_BOX3D_MAX_X_3D_DEFFAULT/2, PHYS_BOX3D_MAX_Y_3D_DEFFAULT/2, PHYS_BOX3D_MAX_Z_3D_DEFFAULT/2,
+        PHYS_BOX3D_MAX_X_3D_DEFFAULT/2, PHYS_BOX3D_MAX_Y_3D_DEFFAULT/2, PHYS_BOX3D_MAX_Z_3D_DEFFAULT/2
+    },
+    0, 0, 0
+};
 
 t_physics_box3d *phys_box3d_objects_table[N_MAX_PHYS_BOX3D_OBJECTS];
 byte n_phys_box3d_objects = 0;
@@ -31,7 +43,7 @@ void phys_box3d_step(void)
         p_phys_obj = *pp_phys_obj;
 
         // Amplica gravedad
-        if(((predivisor_gravity) % 7) == 0)
+        if( !(predivisor_gravity & PHYS_BOX3D_GRAVITY_INTENSITY_MASK) ||  (p_phys_obj->speed_z == 0) )
         {
             p_phys_obj->speed_z -= 1;
         }
@@ -39,10 +51,10 @@ void phys_box3d_step(void)
         // reset touching flags
         p_phys_obj->touch_flags = 0;
 
+        // Truco para estabilizar la coordenada z del objeto que se encuentre sobre un objeto que este a su vez sobre el suelo
         if((int8)(p_phys_obj->box3d.pos_z - p_phys_obj->box3d.height) < -p_phys_obj->speed_z )
         {
             p_phys_obj->speed_z = -(p_phys_obj->box3d.pos_z - p_phys_obj->box3d.height);
-
         }
     }
 
@@ -68,7 +80,9 @@ void phys_box3d_step(void)
                         p_phys_another_obj->speed_x--;
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_E;
-                        p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_obj->p_phys_obj_touching_e = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_W;
+                        p_phys_another_obj->p_phys_obj_touching_w = p_phys_obj;
                     }
                 }
                 else if((p_phys_obj->speed_x > 0) && (p_phys_obj->box3d.pos_x < p_phys_another_obj->box3d.pos_x))
@@ -80,7 +94,9 @@ void phys_box3d_step(void)
                         p_phys_another_obj->speed_x++;
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_W;
-                        p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_obj->p_phys_obj_touching_w = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_E;
+                        p_phys_another_obj->p_phys_obj_touching_e = p_phys_obj;
                     }
                 }
             }
@@ -97,7 +113,9 @@ void phys_box3d_step(void)
                         p_phys_another_obj->speed_y--;
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_N;
-                        p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_obj->p_phys_obj_touching_n = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_S;
+                        p_phys_another_obj->p_phys_obj_touching_s = p_phys_obj;
                     }
                 }
                 else if((p_phys_obj->speed_y > 0) && (p_phys_obj->box3d.pos_y < p_phys_another_obj->box3d.pos_y))
@@ -109,7 +127,9 @@ void phys_box3d_step(void)
                         p_phys_another_obj->speed_y++;
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_S;
-                        p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_obj->p_phys_obj_touching_s = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_N;
+                        p_phys_another_obj->p_phys_obj_touching_n = p_phys_obj;
                     }
                 }
             }
@@ -127,6 +147,8 @@ void phys_box3d_step(void)
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_D;
                         p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_U;
+                        p_phys_another_obj->p_phys_obj_touching_u = p_phys_obj;
                     }
                 }
                 else if((p_phys_obj->speed_z > 0) && (p_phys_obj->box3d.pos_z < p_phys_another_obj->box3d.pos_z))
@@ -138,7 +160,9 @@ void phys_box3d_step(void)
                         p_phys_another_obj->speed_z++;
 
                         p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_U;
-                        p_phys_obj->p_phys_obj_touching_d = p_phys_another_obj;
+                        p_phys_obj->p_phys_obj_touching_u = p_phys_another_obj;
+                        p_phys_another_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_D;
+                        p_phys_another_obj->p_phys_obj_touching_d = p_phys_obj;
                     }
                 }
             }
@@ -162,7 +186,7 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_E;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
         }
 
         if(p_phys_obj->box3d.pos_x > (isometric_max_x_3d - p_phys_obj->box3d.width_x))
@@ -174,7 +198,7 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_W;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
         }
 
         if(p_phys_obj->box3d.pos_y < p_phys_obj->box3d.width_y)
@@ -186,7 +210,7 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_N;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
         }
 
         if(p_phys_obj->box3d.pos_y > (isometric_max_y_3d - p_phys_obj->box3d.width_y))
@@ -198,10 +222,10 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_S;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
         }
 
-        if(p_phys_obj->box3d.pos_z < p_phys_obj->box3d.height)
+        if(p_phys_obj->box3d.pos_z <= p_phys_obj->box3d.height)
         {
             p_phys_obj->box3d.pos_z = p_phys_obj->box3d.height;
             if(p_phys_obj->speed_z < 0) 
@@ -210,13 +234,7 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_D;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
-
-        }
-        else if(p_phys_obj->box3d.pos_z == p_phys_obj->box3d.height)
-        {
-            p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_D;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
         }
 
         if(p_phys_obj->box3d.pos_z > (isometric_max_z_3d - p_phys_obj->box3d.height))
@@ -228,7 +246,30 @@ void phys_box3d_step(void)
             }
 
             p_phys_obj->touch_flags |= PHYS_BOX3D_TOUCH_FLAG_U;
-            p_phys_obj->p_phys_obj_touching_d = NULL;
+            p_phys_obj->p_phys_obj_touching_d = &phys_box3d_room;
+        }
+
+        if(!(predivisor_gravity & PHYS_BOX3D_STATIC_FRICTION_MASK) && (p_phys_obj->touch_flags & PHYS_BOX3D_TOUCH_FLAG_D))
+        {
+            p_phys_another_obj = p_phys_obj->p_phys_obj_touching_d;
+
+            if(p_phys_obj->speed_x > p_phys_another_obj->speed_x)
+            {
+                p_phys_obj->speed_x--;
+            }
+            else if(p_phys_obj->speed_x < p_phys_another_obj->speed_x)
+            {
+                p_phys_obj->speed_x++;
+            }
+
+            if(p_phys_obj->speed_y > p_phys_another_obj->speed_y)
+            {
+                p_phys_obj->speed_y--;
+            }
+            else if(p_phys_obj->speed_y < p_phys_another_obj->speed_y)
+            {
+                p_phys_obj->speed_y++;
+            }
         }
     }
 
