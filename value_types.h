@@ -7,7 +7,13 @@ typedef unsigned char byte;
 typedef char int8;
 typedef struct
 {
-    // posicion 3d origen es el vertice del plano inferior y con menor x e y de la caja que contiene la forma
+	byte x;
+	byte y;
+	byte z;
+} t_b_vec3d;
+typedef struct
+{
+    // posicion 3d origen es el punto central en la caja de contencion
 	byte pos_x;
 	byte pos_y;
 	byte pos_z;

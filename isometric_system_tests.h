@@ -16,6 +16,7 @@
 #define ISOMETRIC_ORIENTATION_E (0)
 #define ISOMETRIC_ORIENTATION_W (2)
 
+#define N_MAX_ISOMETRIC_OBJECTS (16)
 #define N_MAX_ORDERED_ISOMETRIC_OBJECTS (16)
 
 typedef struct
@@ -26,14 +27,27 @@ typedef struct
 	t_sprite sprite;
 } t_isometric_obj;
 
+typedef struct
+{
+	// dimensiones de la caja de contencion
+	t_b_vec3d size;
+	// sprite grafico
+	t_sprite_graphic_def *p_sprite_def;
+} t_isometric_obj_def;
+
 extern byte isometric_origen_proj_x;
 extern byte isometric_origen_proj_y;
+
+extern byte n_isometric_objects;
 
 extern t_isometric_obj *ordered_isometric_objects_table[];
 extern byte n_ordered_isometric_objects;
 
-#define reset_isometric_objects_ordering() {n_ordered_isometric_objects = 0;}
+#define isometric_reset_table() {n_isometric_objects = 0; phys_box3d_reset_table();}
+#define isometric_reset_objects_ordering() {n_ordered_isometric_objects = 0;}
 
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos);
+void isometric_step(void);
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj);
 void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj);
 

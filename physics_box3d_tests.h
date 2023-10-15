@@ -48,9 +48,9 @@ extern t_physics_box3d phys_box3d_room;
 
 extern byte n_phys_box3d_objects;
 
-#define init_phys_box3d_step() {n_phys_box3d_objects = 0;}
+#define phys_box3d_reset_table() {n_phys_box3d_objects = 0;}
 
-void phys_box3d_add_object(t_physics_box3d *p_phys_obj);
+void phys_box3d_add_object_to_table(t_physics_box3d *p_phys_obj);
 void phys_box3d_step(void);
 
 #endif

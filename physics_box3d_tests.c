@@ -22,7 +22,7 @@ byte n_phys_box3d_objects = 0;
 
 byte predivisor_gravity = 0;
 
-void phys_box3d_add_object(t_physics_box3d *p_phys_obj)
+void phys_box3d_add_object_to_table(t_physics_box3d *p_phys_obj)
 {
     if(n_phys_box3d_objects >= N_MAX_PHYS_BOX3D_OBJECTS) return;
 

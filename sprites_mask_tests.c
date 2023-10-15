@@ -71,6 +71,7 @@ void sprite_init(void)
 
 void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset)
 {
+	psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
 	psprite->width = psprite_graphdef->width;
 	psprite->height = psprite_graphdef->height;
 	psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
