@@ -163,6 +163,8 @@ t_isometric_obj_def isometric_def_block =
 		&spr_graph_def_block
 	};
 
+void player_controller(t_isometric_obj *p_isometric_obj_player);
+
 t_isometric_obj_def isometric_def_ghost =
 	{
 		{ 6, 6, 5 },
@@ -176,21 +178,119 @@ t_b_vec3d pos_ghost   = { 30, 30, 20 };
 
 /*******************************************************************************************************/
 
+byte nframes;
 byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
+
+void player_controller(t_isometric_obj *p_isometric_obj_player)
+{
+	if(keyboard_is_key_pressed_1()) 
+	{
+		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		{
+			p_isometric_obj_player->physics.speed_y = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_y - 1;
+		}
+
+		if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
+		{
+			ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W;
+			sprite_set_frames_subset(&(p_isometric_obj_player->sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
+			p_isometric_obj_player->sprite.required_graphic_state = (p_isometric_obj_player->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
+		}
+		else
+		{
+			if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+		}
+	}
+
+	if(keyboard_is_key_pressed_q())
+	{
+		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		{
+			p_isometric_obj_player->physics.speed_y = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_y + 1;
+		}
+
+		if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
+		{
+			ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E;
+			sprite_set_frames_subset(&(p_isometric_obj_player->sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
+			p_isometric_obj_player->sprite.required_graphic_state = (p_isometric_obj_player->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+		}
+		else
+		{
+			if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+		}
+	}
+
+	if(keyboard_is_key_pressed_3())
+	{
+		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		{
+			p_isometric_obj_player->physics.speed_x = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_x - 1;
+		}
+
+		if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
+		{
+			ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E;
+			sprite_set_frames_subset(&(p_isometric_obj_player->sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
+			p_isometric_obj_player->sprite.required_graphic_state = (p_isometric_obj_player->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+		}
+		else
+		{
+			if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+		}
+	}
+
+	if(keyboard_is_key_pressed_2()) 
+	{
+		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		{
+			p_isometric_obj_player->physics.speed_x = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_x + 1;
+		}
+
+		if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
+		{
+			ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
+			sprite_set_frames_subset(&(p_isometric_obj_player->sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
+			p_isometric_obj_player->sprite.required_graphic_state = (p_isometric_obj_player->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
+		}
+		else
+		{
+			if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+		}
+	}
+
+	if(keyboard_is_key_pressed_4()) 
+	{
+		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		{
+			p_isometric_obj_player->physics.speed_z = 4;
+		}
+
+		if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+	}
+
+	if(keyboard_is_key_pressed_5()) 
+	{
+		if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
+	}
+}
+
+/*******************************************************************************************************/
+
 extern t_isometric_obj isometric_objects_table[];
 
 void main()
 {
-	byte i, nframes;
+	byte i;
 
 	sprite_init();
 	sprite_transfer_vdisplay();
 
 	isometric_reset_table();
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_0);
-	isometric_add_object_to_table(&isometric_def_ghost, &pos_ghost);
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_1);
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_2);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_0, NULL);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_1, NULL);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_2, NULL);
+	isometric_add_object_to_table(&isometric_def_ghost, &pos_ghost, player_controller);
 
 	// En estos momentos (18-09-2023) se observa aprox con 10 sprites en el bucle while(1)
 	// 256 refrescos en 22 segundos =>
@@ -206,97 +306,6 @@ void main()
 		keyboard_readrow_trewq();
 
 		if(keyboard_is_key_pressed_t()) break;
-
-		if(keyboard_is_key_pressed_1()) 
-		{
-			if(isometric_objects_table[1].physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
-			{
-				isometric_objects_table[1].physics.speed_y = isometric_objects_table[1].physics.p_phys_obj_touching_d->speed_y - 1;
-			}
-
-			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W))
-			{
-				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_W;
-				sprite_set_frames_subset(&(isometric_objects_table[1].sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
-				isometric_objects_table[1].sprite.required_graphic_state = (isometric_objects_table[1].sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
-			}
-			else
-			{
-				if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-			}
-		}
-
-		if(keyboard_is_key_pressed_q())
-		{
-			if(isometric_objects_table[1].physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
-			{
-				isometric_objects_table[1].physics.speed_y = isometric_objects_table[1].physics.p_phys_obj_touching_d->speed_y + 1;
-			}
-
-			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E))
-			{
-				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_E;
-				sprite_set_frames_subset(&(isometric_objects_table[1].sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
-				isometric_objects_table[1].sprite.required_graphic_state = (isometric_objects_table[1].sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
-			}
-			else
-			{
-				if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-			}
-		}
-
-		if(keyboard_is_key_pressed_3())
-		{
-			if(isometric_objects_table[1].physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
-			{
-				isometric_objects_table[1].physics.speed_x = isometric_objects_table[1].physics.p_phys_obj_touching_d->speed_x - 1;
-			}
-
-			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E))
-			{
-				ghost_last_orientation = ISOMETRIC_ORIENTATION_N | ISOMETRIC_ORIENTATION_E;
-				sprite_set_frames_subset(&(isometric_objects_table[1].sprite), &spr_graph_def_ghost, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size, spr_graph_def_ghost.total_frames_size);
-				isometric_objects_table[1].sprite.required_graphic_state = (isometric_objects_table[1].sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
-			}
-			else
-			{
-				if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-			}
-		}
-
-		if(keyboard_is_key_pressed_2()) 
-		{
-			if(isometric_objects_table[1].physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
-			{
-				isometric_objects_table[1].physics.speed_x = isometric_objects_table[1].physics.p_phys_obj_touching_d->speed_x + 1;
-			}
-
-			if(ghost_last_orientation != (ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W))
-			{
-				ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
-				sprite_set_frames_subset(&(isometric_objects_table[1].sprite), &spr_graph_def_ghost, 0, spr_graph_def_ghost.frame_size + spr_graph_def_ghost.frame_size);
-				isometric_objects_table[1].sprite.required_graphic_state = (isometric_objects_table[1].sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
-			}
-			else
-			{
-				if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-			}
-		}
-
-		if(keyboard_is_key_pressed_4()) 
-		{
-			if(isometric_objects_table[1].physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
-			{
-				isometric_objects_table[1].physics.speed_z = 4;
-			}
-
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-		}
-
-		if(keyboard_is_key_pressed_5()) 
-		{
-			if(!(nframes & 7)) sprite_next_frame(&(isometric_objects_table[1].sprite));
-		}
 
 		isometric_step();
 	}

@@ -11,7 +11,7 @@ int height_over_proj_plane[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 t_isometric_obj *ordered_isometric_objects_table[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 byte n_ordered_isometric_objects = 0;
 
-void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos)
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, void (*behavior)(t_isometric_obj *))
 {
 	t_isometric_obj *p_isometric_obj;
 
@@ -29,6 +29,8 @@ void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b
 	p_isometric_obj->physics.speed_y = 0;
 	p_isometric_obj->physics.speed_z = 0;
 	p_isometric_obj->physics.touch_flags = 0;
+
+	p_isometric_obj->behavior = behavior;
 
 	p_isometric_obj->sprite.last_y = 255; // Aun no ha sido dibujado, no es necesario borrarlo antes de dibujarlo en el buffer virtual o tranferir la zona que ocupaba al frame buffer visible para borrarlo
 	sprite_set_graphic_def(&p_isometric_obj->sprite , p_isometric_obj_def->p_sprite_def, 0, p_isometric_obj_def->p_sprite_def->total_frames_size);
@@ -88,6 +90,14 @@ void isometric_step(void)
 	t_isometric_obj *p_isometric_obj;
 
 	phys_box3d_step();
+
+	for(i = 0, p_isometric_obj = isometric_objects_table; i < n_isometric_objects; i++, p_isometric_obj++)
+	{
+		if(p_isometric_obj->behavior)
+		{
+			(p_isometric_obj->behavior)(p_isometric_obj);
+		}
+	}
 
 	for(i = 0, p_isometric_obj = isometric_objects_table; i < n_isometric_objects; i++, p_isometric_obj++)
 	{
