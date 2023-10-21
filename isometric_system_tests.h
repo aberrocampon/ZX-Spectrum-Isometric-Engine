@@ -48,7 +48,7 @@ extern byte n_ordered_isometric_objects;
 #define isometric_reset_table() {n_isometric_objects = 0; phys_box3d_reset_table();}
 #define isometric_reset_objects_ordering() {n_ordered_isometric_objects = 0;}
 
-void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, void (*behavior)(t_isometric_obj *));
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *));
 void isometric_step(void);
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj);
 void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj);

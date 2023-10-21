@@ -11,7 +11,7 @@ int height_over_proj_plane[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 t_isometric_obj *ordered_isometric_objects_table[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 byte n_ordered_isometric_objects = 0;
 
-void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, void (*behavior)(t_isometric_obj *))
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *))
 {
 	t_isometric_obj *p_isometric_obj;
 
@@ -28,7 +28,7 @@ void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b
 	p_isometric_obj->physics.speed_x = 0;
 	p_isometric_obj->physics.speed_y = 0;
 	p_isometric_obj->physics.speed_z = 0;
-	p_isometric_obj->physics.touch_flags = 0;
+	p_isometric_obj->physics.flags = init_flags; // Flags de propiedades dinamicas del objeto aplicado al motor de fisicas
 
 	p_isometric_obj->behavior = behavior;
 

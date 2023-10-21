@@ -8,18 +8,21 @@
 #define PHYS_BOX3D_MAX_Y_3D_DEFFAULT (125)
 #define PHYS_BOX3D_MAX_Z_3D_DEFFAULT (60)
 
-#define PHYS_BOX3D_TOUCH_MASK_N  (~1)
-#define PHYS_BOX3D_TOUCH_FLAG_N  (1)
-#define PHYS_BOX3D_TOUCH_MASK_S  (~2)
-#define PHYS_BOX3D_TOUCH_FLAG_S  (2)
-#define PHYS_BOX3D_TOUCH_MASK_E  (~4)
-#define PHYS_BOX3D_TOUCH_FLAG_E  (4)
-#define PHYS_BOX3D_TOUCH_MASK_W  (~8)
-#define PHYS_BOX3D_TOUCH_FLAG_W  (8)
-#define PHYS_BOX3D_TOUCH_MASK_U  (~16)
-#define PHYS_BOX3D_TOUCH_FLAG_U  (16)
-#define PHYS_BOX3D_TOUCH_MASK_D  (~32)
-#define PHYS_BOX3D_TOUCH_FLAG_D  (32)
+#define PHYS_BOX3D_MASK_TOUCH_N   (~1)
+#define PHYS_BOX3D_FLAG_TOUCH_N   (1)
+#define PHYS_BOX3D_MASK_TOUCH_S   (~2)
+#define PHYS_BOX3D_FLAG_TOUCH_S   (2)
+#define PHYS_BOX3D_MASK_TOUCH_E   (~4)
+#define PHYS_BOX3D_FLAG_TOUCH_E   (4)
+#define PHYS_BOX3D_MASK_TOUCH_W   (~8)
+#define PHYS_BOX3D_FLAG_TOUCH_W   (8)
+#define PHYS_BOX3D_MASK_TOUCH_U   (~16)
+#define PHYS_BOX3D_FLAG_TOUCH_U   (16)
+#define PHYS_BOX3D_MASK_TOUCH_D   (~32)
+#define PHYS_BOX3D_FLAG_TOUCH_D   (32)
+// No recibe impactos del resto de objeto que alteren su trayectoria y velocidad. Pero si ejerce impactos sobre el resto alterando la velocidad y trayectoria de estos. Este impacto frena al objeto cinematico. No experimenta gravedad tampoco.
+#define PHYS_BOX3D_MASK_CINEMATIC (~64)
+#define PHYS_BOX3D_FLAG_CINEMATIC (64)
 
 #define N_MAX_PHYS_BOX3D_OBJECTS (16)
 
@@ -31,7 +34,7 @@ typedef struct physics_box3d
 	int8 speed_y;
 	int8 speed_z;
 	// contacto del objeto caja en las 6 cara con otros objetos, o paredes, techo y suelo
-	byte touch_flags;
+	byte flags;
 	struct physics_box3d *p_phys_obj_touching_n; // contacto en la cara norte
 	struct physics_box3d *p_phys_obj_touching_s; // contacto en la cara sur
 	struct physics_box3d *p_phys_obj_touching_e; // contacto en la cara este

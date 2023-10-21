@@ -163,8 +163,6 @@ t_isometric_obj_def isometric_def_block =
 		&spr_graph_def_block
 	};
 
-void player_controller(t_isometric_obj *p_isometric_obj_player);
-
 t_isometric_obj_def isometric_def_ghost =
 	{
 		{ 6, 6, 5 },
@@ -181,11 +179,13 @@ t_b_vec3d pos_ghost   = { 30, 30, 20 };
 byte nframes;
 byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
 
-void player_controller(t_isometric_obj *p_isometric_obj_player)
+extern byte predivisor_gravity;
+
+void behavior_controller_player(t_isometric_obj *p_isometric_obj_player)
 {
 	if(keyboard_is_key_pressed_1()) 
 	{
-		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
 			p_isometric_obj_player->physics.speed_y = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_y - 1;
 		}
@@ -204,7 +204,7 @@ void player_controller(t_isometric_obj *p_isometric_obj_player)
 
 	if(keyboard_is_key_pressed_q())
 	{
-		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
 			p_isometric_obj_player->physics.speed_y = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_y + 1;
 		}
@@ -223,7 +223,7 @@ void player_controller(t_isometric_obj *p_isometric_obj_player)
 
 	if(keyboard_is_key_pressed_3())
 	{
-		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
 			p_isometric_obj_player->physics.speed_x = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_x - 1;
 		}
@@ -242,7 +242,7 @@ void player_controller(t_isometric_obj *p_isometric_obj_player)
 
 	if(keyboard_is_key_pressed_2()) 
 	{
-		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
 			p_isometric_obj_player->physics.speed_x = p_isometric_obj_player->physics.p_phys_obj_touching_d->speed_x + 1;
 		}
@@ -261,8 +261,9 @@ void player_controller(t_isometric_obj *p_isometric_obj_player)
 
 	if(keyboard_is_key_pressed_4()) 
 	{
-		if(p_isometric_obj_player->physics.touch_flags & PHYS_BOX3D_TOUCH_FLAG_D)
+		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
+			predivisor_gravity = 0;
 			p_isometric_obj_player->physics.speed_z = 4;
 		}
 
@@ -273,6 +274,58 @@ void player_controller(t_isometric_obj *p_isometric_obj_player)
 	{
 		if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));
 	}
+}
+
+void behavior_cinematic_updown(t_isometric_obj *p_isometric_obj)
+{
+	static int8 speedz = -1;
+	static byte delay = 0;
+
+	if(speedz < 0)
+	{
+		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
+		{
+			p_isometric_obj->physics.speed_z = 0;
+		}
+		else if(p_isometric_obj->physics.box3d.pos_z <= 10)
+		{
+			p_isometric_obj->physics.speed_z = speedz = 0;
+			delay = 32;
+		}
+		else
+		{
+			p_isometric_obj->physics.speed_z = speedz;
+		}
+	}
+	else if(speedz > 0)
+	{
+		if((p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_U) && (p_isometric_obj->physics.p_phys_obj_touching_u->flags & PHYS_BOX3D_FLAG_TOUCH_U ))
+		{
+			p_isometric_obj->physics.speed_z = 0;
+		}
+		else if(p_isometric_obj->physics.box3d.pos_z >= 20)
+		{
+			p_isometric_obj->physics.speed_z = speedz = 0;
+			delay = 32;
+		}
+		else
+		{
+			p_isometric_obj->physics.speed_z = speedz;
+		}
+	}
+	else
+	{
+		if(!(delay--))
+		{
+			if(p_isometric_obj->physics.box3d.pos_z >= 20)
+				p_isometric_obj->physics.speed_z = speedz = -1;
+			else
+				p_isometric_obj->physics.speed_z = speedz = 1;
+		}
+		else
+			p_isometric_obj->physics.speed_z = 0;
+	}
+
 }
 
 /*******************************************************************************************************/
@@ -287,10 +340,10 @@ void main()
 	sprite_transfer_vdisplay();
 
 	isometric_reset_table();
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_0, NULL);
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_1, NULL);
-	isometric_add_object_to_table(&isometric_def_block, &pos_block_2, NULL);
-	isometric_add_object_to_table(&isometric_def_ghost, &pos_ghost, player_controller);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_2, PHYS_BOX3D_FLAG_CINEMATIC, behavior_cinematic_updown);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_0, 0, NULL);
+	isometric_add_object_to_table(&isometric_def_block, &pos_block_1, 0, NULL);
+	isometric_add_object_to_table(&isometric_def_ghost, &pos_ghost, 0, behavior_controller_player);
 
 	// En estos momentos (18-09-2023) se observa aprox con 10 sprites en el bucle while(1)
 	// 256 refrescos en 22 segundos =>
