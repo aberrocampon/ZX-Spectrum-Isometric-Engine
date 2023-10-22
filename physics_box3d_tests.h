@@ -24,6 +24,7 @@
 #define PHYS_BOX3D_MASK_CINEMATIC (~64)
 #define PHYS_BOX3D_FLAG_CINEMATIC (64)
 
+#define PHYS_BOX3D_CONTACT_TOLERANCE (4)
 #define N_MAX_PHYS_BOX3D_OBJECTS (16)
 
 typedef struct physics_box3d

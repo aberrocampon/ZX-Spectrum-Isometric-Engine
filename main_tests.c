@@ -6,7 +6,7 @@
  * 
  */
 
-#pragma output CRT_ORG_CODE          = 0x8000
+#pragma output CRT_ORG_CODE          = 0x7700
 
 #include "keyboard.h"
 #include "isometric_system_tests.h"
@@ -169,10 +169,10 @@ t_isometric_obj_def isometric_def_ghost =
 		&spr_graph_def_ghost
 	};
 
-t_b_vec3d pos_block_0 = { 30, 30, 50 };
-t_b_vec3d pos_block_1 = { 40, 50, 60 };
+t_b_vec3d pos_block_0 = { 70, 30, 50 };
+t_b_vec3d pos_block_1 = { 50, 50, 35 };
 t_b_vec3d pos_block_2 = { 40, 50, 20 };
-t_b_vec3d pos_ghost   = { 30, 30, 20 };
+t_b_vec3d pos_ghost   = { 70, 30, 20 };
 
 /*******************************************************************************************************/
 
@@ -283,11 +283,11 @@ void behavior_cinematic_updown(t_isometric_obj *p_isometric_obj)
 
 	if(speedz < 0)
 	{
-		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
+		/*if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
 			p_isometric_obj->physics.speed_z = 0;
 		}
-		else if(p_isometric_obj->physics.box3d.pos_z <= 10)
+		else */if(p_isometric_obj->physics.box3d.pos_z <= 10)
 		{
 			p_isometric_obj->physics.speed_z = speedz = 0;
 			delay = 32;
@@ -299,11 +299,11 @@ void behavior_cinematic_updown(t_isometric_obj *p_isometric_obj)
 	}
 	else if(speedz > 0)
 	{
-		if((p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_U) && (p_isometric_obj->physics.p_phys_obj_touching_u->flags & PHYS_BOX3D_FLAG_TOUCH_U ))
+		/*if((p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_U) && (p_isometric_obj->physics.p_phys_obj_touching_u->flags & PHYS_BOX3D_FLAG_TOUCH_U ))
 		{
 			p_isometric_obj->physics.speed_z = 0;
 		}
-		else if(p_isometric_obj->physics.box3d.pos_z >= 20)
+		else */if(p_isometric_obj->physics.box3d.pos_z >= 20)
 		{
 			p_isometric_obj->physics.speed_z = speedz = 0;
 			delay = 32;
