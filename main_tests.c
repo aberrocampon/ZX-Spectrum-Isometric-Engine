@@ -169,17 +169,15 @@ t_isometric_obj_def isometric_def_ghost =
 		&spr_graph_def_ghost
 	};
 
-t_b_vec3d pos_block_0 = { 70, 30, 50 };
+t_b_vec3d pos_block_0 = { 70, 30, 54 };
 t_b_vec3d pos_block_1 = { 50, 50, 35 };
 t_b_vec3d pos_block_2 = { 40, 50, 20 };
-t_b_vec3d pos_ghost   = { 70, 30, 20 };
+t_b_vec3d pos_ghost   = { 70, 30, 5 };
 
 /*******************************************************************************************************/
 
 byte nframes;
 byte ghost_last_orientation = ISOMETRIC_ORIENTATION_S | ISOMETRIC_ORIENTATION_W;
-
-extern byte predivisor_gravity;
 
 void behavior_controller_player(t_isometric_obj *p_isometric_obj_player)
 {
@@ -263,8 +261,7 @@ void behavior_controller_player(t_isometric_obj *p_isometric_obj_player)
 	{
 		if(p_isometric_obj_player->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
-			predivisor_gravity = 0;
-			p_isometric_obj_player->physics.speed_z = 4;
+			p_isometric_obj_player->physics.speed_z = 3;
 		}
 
 		if(!(nframes & 7)) sprite_next_frame(&(p_isometric_obj_player->sprite));

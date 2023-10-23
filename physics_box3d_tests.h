@@ -24,7 +24,7 @@
 #define PHYS_BOX3D_MASK_CINEMATIC (~64)
 #define PHYS_BOX3D_FLAG_CINEMATIC (64)
 
-#define PHYS_BOX3D_CONTACT_TOLERANCE (4)
+#define PHYS_BOX3D_CONTACT_TOLERANCE (5)
 #define N_MAX_PHYS_BOX3D_OBJECTS (16)
 
 typedef struct physics_box3d
@@ -34,6 +34,8 @@ typedef struct physics_box3d
 	int8 speed_x;
 	int8 speed_y;
 	int8 speed_z;
+	// contador para reducir el efecto de la garvedad.
+	byte gravity_count;
 	// contacto del objeto caja en las 6 cara con otros objetos, o paredes, techo y suelo
 	byte flags;
 	struct physics_box3d *p_phys_obj_touching_n; // contacto en la cara norte

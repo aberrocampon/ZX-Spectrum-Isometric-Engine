@@ -28,6 +28,7 @@ void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b
 	p_isometric_obj->physics.speed_x = 0;
 	p_isometric_obj->physics.speed_y = 0;
 	p_isometric_obj->physics.speed_z = 0;
+	p_isometric_obj->physics.gravity_count = 1;
 	p_isometric_obj->physics.flags = init_flags; // Flags de propiedades dinamicas del objeto aplicado al motor de fisicas
 
 	p_isometric_obj->behavior = behavior;

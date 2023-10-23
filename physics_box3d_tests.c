@@ -1,7 +1,7 @@
 
 #include "physics_box3d_tests.h"
 
-#define PHYS_BOX3D_GRAVITY_INTENSITY_MASK (7)
+#define PHYS_BOX3D_GRAVITY_INTENSITY_INIT_COUNTER (4)
 #define PHYS_BOX3D_STATIC_FRICTION_MASK (7)
 
 byte isometric_max_x_3d = PHYS_BOX3D_MAX_X_3D_DEFFAULT;
@@ -65,7 +65,7 @@ t_physics_box3d phys_box3d_wall_w =
 t_physics_box3d *phys_box3d_objects_table[N_MAX_PHYS_BOX3D_OBJECTS];
 byte n_phys_box3d_objects = 0;
 
-byte predivisor_gravity = 0;
+byte predivisor_friction = 0;
 
 void phys_box3d_add_object_to_table(t_physics_box3d *p_phys_obj)
 {
@@ -82,17 +82,18 @@ void phys_box3d_step(void)
     int8 delta_speed_x2, delta_speed;
     t_physics_box3d **pp_phys_obj, *p_phys_obj,**pp_phys_another_obj, *p_phys_another_obj;
 
-    // step de la aceletacion de la gravedad
-    ++predivisor_gravity;
+    ++predivisor_friction;
 
+    // step de la aceletacion de la gravedad
     for(i = 0, pp_phys_obj = phys_box3d_objects_table; i < n_phys_box3d_objects; i++, pp_phys_obj++)
     {
         p_phys_obj = *pp_phys_obj;
 
         // Amplica gravedad
-        if( !(p_phys_obj->flags & PHYS_BOX3D_FLAG_CINEMATIC) && !(predivisor_gravity & PHYS_BOX3D_GRAVITY_INTENSITY_MASK) )
+        if( !(p_phys_obj->flags & PHYS_BOX3D_FLAG_CINEMATIC) && !(--p_phys_obj->gravity_count) )
         {
             p_phys_obj->speed_z -= 1;
+            p_phys_obj->gravity_count = PHYS_BOX3D_GRAVITY_INTENSITY_INIT_COUNTER;
         }
 
         // reset touching flags
@@ -100,7 +101,7 @@ void phys_box3d_step(void)
         if( !( (p_phys_obj->flags & PHYS_BOX3D_FLAG_TOUCH_D) && ((p_phys_obj->box3d.pos_z - p_phys_obj->box3d.height) == (p_phys_obj->p_phys_obj_touching_d->box3d.pos_z + p_phys_obj->p_phys_obj_touching_d->box3d.height)) &&
             !(((p_phys_obj->box3d.pos_x + p_phys_obj->box3d.width_x) <= (p_phys_obj->p_phys_obj_touching_d->box3d.pos_x - p_phys_obj->p_phys_obj_touching_d->box3d.width_x)) || ((p_phys_obj->box3d.pos_x - p_phys_obj->box3d.width_x) >= (p_phys_obj->p_phys_obj_touching_d->box3d.pos_x + p_phys_obj->p_phys_obj_touching_d->box3d.width_x)) ||
                     ((p_phys_obj->box3d.pos_y + p_phys_obj->box3d.width_y) <= (p_phys_obj->p_phys_obj_touching_d->box3d.pos_y - p_phys_obj->p_phys_obj_touching_d->box3d.width_y)) || ((p_phys_obj->box3d.pos_y - p_phys_obj->box3d.width_y) >= (p_phys_obj->p_phys_obj_touching_d->box3d.pos_y + p_phys_obj->p_phys_obj_touching_d->box3d.width_y))) &&
-            (p_phys_obj->speed_z <= p_phys_obj->p_phys_obj_touching_d->speed_z) ) )
+            (p_phys_obj->speed_z == p_phys_obj->p_phys_obj_touching_d->speed_z) && (p_phys_obj->speed_z == 0) ) )
         {
             p_phys_obj->flags &= PHYS_BOX3D_MASK_TOUCH_D;
         }
@@ -148,23 +149,6 @@ void phys_box3d_step(void)
                                 delta_speed = delta_speed_x2 >> 1;
                                 p_phys_obj->speed_x += delta_speed;
                                 p_phys_another_obj->speed_x -= delta_speed;
-
-                                if( (p_phys_obj->box3d.pos_x + p_phys_obj->speed_x) > (isometric_max_x_3d - p_phys_obj->box3d.width_x) )
-                                {
-                                    p_phys_obj->speed_x = isometric_max_x_3d - p_phys_obj->box3d.width_x - p_phys_obj->box3d.pos_x;
-                                    p_phys_another_obj->speed_x = (p_phys_obj->box3d.pos_x - p_phys_obj->box3d.width_x + p_phys_obj->speed_x) - (p_phys_another_obj->box3d.pos_x + p_phys_another_obj->box3d.width_x);
-
-                                    p_phys_obj->flags |= PHYS_BOX3D_FLAG_TOUCH_W;
-                                    p_phys_obj->p_phys_obj_touching_w = &phys_box3d_wall_w;
-                                }
-                                else if((p_phys_another_obj->box3d.pos_x + p_phys_another_obj->speed_x) < p_phys_another_obj->box3d.width_x)
-                                {
-                                    p_phys_another_obj->speed_x = p_phys_another_obj->box3d.width_x - p_phys_another_obj->box3d.pos_x;
-                                    p_phys_obj->speed_x = (p_phys_another_obj->box3d.pos_x + p_phys_another_obj->box3d.width_x + p_phys_another_obj->speed_x) - (p_phys_obj->box3d.pos_x - p_phys_obj->box3d.width_x);
-
-                                    p_phys_another_obj->flags |= PHYS_BOX3D_FLAG_TOUCH_E;
-                                    p_phys_another_obj->p_phys_obj_touching_e = &phys_box3d_wall_e;
-                                }
                             }
                             else
                             {
@@ -214,23 +198,6 @@ void phys_box3d_step(void)
                                 delta_speed = delta_speed_x2 >> 1;
                                 p_phys_obj->speed_x -= delta_speed;
                                 p_phys_another_obj->speed_x += delta_speed;
-
-                                if( (p_phys_another_obj->box3d.pos_x + p_phys_another_obj->speed_x) > (isometric_max_x_3d - p_phys_another_obj->box3d.width_x) )
-                                {
-                                    p_phys_another_obj->speed_x = isometric_max_x_3d - p_phys_another_obj->box3d.width_x - p_phys_another_obj->box3d.pos_x;
-                                    p_phys_obj->speed_x = (p_phys_another_obj->box3d.pos_x - p_phys_another_obj->box3d.width_x + p_phys_another_obj->speed_x) - (p_phys_obj->box3d.pos_x + p_phys_obj->box3d.width_x);
-
-                                    p_phys_another_obj->flags |= PHYS_BOX3D_FLAG_TOUCH_W;
-                                    p_phys_another_obj->p_phys_obj_touching_w = &phys_box3d_wall_w;
-                                }
-                                else if((p_phys_obj->box3d.pos_x + p_phys_obj->speed_x) < p_phys_obj->box3d.width_x)
-                                {
-                                    p_phys_obj->speed_x = p_phys_obj->box3d.width_x - p_phys_obj->box3d.pos_x;
-                                    p_phys_another_obj->speed_x = (p_phys_obj->box3d.pos_x + p_phys_obj->box3d.width_x + p_phys_obj->speed_x) - (p_phys_another_obj->box3d.pos_x - p_phys_another_obj->box3d.width_x);
-
-                                    p_phys_obj->flags |= PHYS_BOX3D_FLAG_TOUCH_E;
-                                    p_phys_obj->p_phys_obj_touching_e = &phys_box3d_wall_e;
-                                }
                             }
                             else
                             {
@@ -551,7 +518,7 @@ void phys_box3d_step(void)
             p_phys_obj->p_phys_obj_touching_u = &phys_box3d_ceiling;
         }
 
-        if(!(predivisor_gravity & PHYS_BOX3D_STATIC_FRICTION_MASK) && (p_phys_obj->flags & PHYS_BOX3D_FLAG_TOUCH_D) && !(p_phys_obj->flags & PHYS_BOX3D_FLAG_CINEMATIC))
+        if(!(predivisor_friction & PHYS_BOX3D_STATIC_FRICTION_MASK) && (p_phys_obj->flags & PHYS_BOX3D_FLAG_TOUCH_D) && !(p_phys_obj->flags & PHYS_BOX3D_FLAG_CINEMATIC))
         {
             p_phys_another_obj = p_phys_obj->p_phys_obj_touching_d;
 
@@ -572,6 +539,12 @@ void phys_box3d_step(void)
             {
                 p_phys_obj->speed_y++;
             }
+        }
+
+        // Reset contador de reduccion de intensidad de la gravedad
+        if(p_phys_obj->flags & (PHYS_BOX3D_FLAG_TOUCH_D | PHYS_BOX3D_FLAG_TOUCH_U))
+        {
+            p_phys_obj->gravity_count = PHYS_BOX3D_GRAVITY_INTENSITY_INIT_COUNTER;
         }
     }
 
