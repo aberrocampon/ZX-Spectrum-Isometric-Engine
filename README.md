@@ -1,6 +1,6 @@
 *ZX Spectrum isometric engine development*
 
-Or as known at the age, filmation engine. A set of routines useful for implementing different types of isometric engines will be develop tested and added to this repository.
+Or as known at the age, filmation engine. A set of routines useful for implementing different types of isometric engines will be developed tested and added to this repository.
 
 This includes also routines to animate sprites with masks useful for othe types of games, and not only isometric.
 
