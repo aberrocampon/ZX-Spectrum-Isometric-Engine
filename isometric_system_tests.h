@@ -9,21 +9,34 @@
 #define ISOMETRIC_ORIGEN_PROJ_X_DEFFAULT (127)
 #define ISOMETRIC_ORIGEN_PROJ_Y_DEFFAULT (64)
 
-#define ISOMETRIC_ORIENTATION_MASK_NS (1)
-#define ISOMETRIC_ORIENTATION_N (0)
-#define ISOMETRIC_ORIENTATION_S (1)
-#define ISOMETRIC_ORIENTATION_MASK_EW (2)
-#define ISOMETRIC_ORIENTATION_E (0)
-#define ISOMETRIC_ORIENTATION_W (2)
+#define ISOMETRIC_ORIENTATION_N (1)
+#define ISOMETRIC_ORIENTATION_S (2)
+#define ISOMETRIC_ORIENTATION_E (4)
+#define ISOMETRIC_ORIENTATION_W (8)
 
 #define N_MAX_ISOMETRIC_OBJECTS (16)
 #define N_MAX_ORDERED_ISOMETRIC_OBJECTS (16)
+
+typedef struct isometric_system_tests
+{
+	byte b_0;
+	byte b_1;
+	byte b_2;
+	byte b_3;
+	byte b_4;
+	byte b_5;
+	byte b_6;
+	byte b_7;
+} t_behavior_variables;
+
 
 typedef struct isometric_obj
 {
 	// Coordenadas, caja de contencion, parametros fisicos y de comportamiento
 	t_physics_box3d physics;
 	// Funcion de control, comportamiento o intelligencia del objeto
+	t_behavior_variables behavior_variables;
+	byte bahavior_parameter;
 	void (*behavior)(struct isometric_obj *);
 	// sprite grafico
 	t_sprite sprite;
@@ -48,7 +61,7 @@ extern byte n_ordered_isometric_objects;
 #define isometric_reset_table() {n_isometric_objects = 0; phys_box3d_reset_table();}
 #define isometric_reset_objects_ordering() {n_ordered_isometric_objects = 0;}
 
-void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *));
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *), byte behavior_parameter);
 void isometric_step(void);
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj);
 void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj);

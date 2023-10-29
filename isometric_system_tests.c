@@ -11,8 +11,10 @@ int height_over_proj_plane[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 t_isometric_obj *ordered_isometric_objects_table[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 byte n_ordered_isometric_objects = 0;
 
-void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *))
+void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte init_flags, void (*behavior)(t_isometric_obj *), byte behavior_parameter)
 {
+	byte i;
+	byte *p;
 	t_isometric_obj *p_isometric_obj;
 
 	if(n_isometric_objects >= N_MAX_ISOMETRIC_OBJECTS) return;
@@ -31,10 +33,16 @@ void isometric_add_object_to_table(t_isometric_obj_def *p_isometric_obj_def, t_b
 	p_isometric_obj->physics.gravity_count = 1;
 	p_isometric_obj->physics.flags = init_flags; // Flags de propiedades dinamicas del objeto aplicado al motor de fisicas
 
+	p = &(p_isometric_obj->behavior_variables);
+	for(i = 0; i < sizeof(p_isometric_obj->behavior_variables); i++)
+	{
+		*p++ = 0;
+	}
+	p_isometric_obj->bahavior_parameter = behavior_parameter;
 	p_isometric_obj->behavior = behavior;
 
 	p_isometric_obj->sprite.last_y = 255; // Aun no ha sido dibujado, no es necesario borrarlo antes de dibujarlo en el buffer virtual o tranferir la zona que ocupaba al frame buffer visible para borrarlo
-	sprite_set_graphic_def(&p_isometric_obj->sprite , p_isometric_obj_def->p_sprite_def, 0, p_isometric_obj_def->p_sprite_def->total_frames_size);
+	sprite_set_graphic_def(&p_isometric_obj->sprite , p_isometric_obj_def->p_sprite_def);
 
 	phys_box3d_add_object_to_table(&p_isometric_obj->physics);
 

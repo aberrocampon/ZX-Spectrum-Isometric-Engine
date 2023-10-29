@@ -50,6 +50,7 @@ void precalculate_shift_tables(void)
 void sprite_init(void)
 {
 	int i;
+	byte *p_attribs_buffer = (byte *)0x5800;
 
 	precalculate_flip_byte_table();
 	precalculate_shift_tables();
@@ -67,9 +68,14 @@ void sprite_init(void)
 	  		vdisplay_bin_buff[i] = 0xaa;
 		}
 	}
+
+	for(; p_attribs_buffer < ((byte *)0x5b00); p_attribs_buffer++)
+	{
+		*p_attribs_buffer = 7;
+	}
 }
 
-void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset)
+void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef)
 {
 	psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
 	psprite->width = psprite_graphdef->width;
@@ -77,13 +83,13 @@ void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_gra
 	psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
 	psprite->delta_sprite_y = psprite_graphdef->delta_sprite_y;
 	psprite->frame_size = psprite_graphdef->frame_size;
-	sprite_set_frames_subset(psprite, psprite_graphdef, first_frane_offset, last_frane_offset);
+	sprite_set_frames_subset(psprite, psprite_graphdef->graphic_bin_def, psprite_graphdef->graphic_bin_def + psprite_graphdef->total_frames_size);
 }
 
-void sprite_set_frames_subset(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset)
+void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address)
 {
-	psprite->first_frame = psprite->actual_frame = (psprite_graphdef->graphic_bin_def) + first_frane_offset;
-	psprite->last_frame = (psprite_graphdef->graphic_bin_def) + last_frane_offset;
+	psprite->first_frame = psprite->actual_frame = first_frane_address;
+	psprite->last_frame = last_frane_address;
 }
 
 void sprite_next_frame(t_sprite *psprite)

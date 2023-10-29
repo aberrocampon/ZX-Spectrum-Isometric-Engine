@@ -613,13 +613,14 @@ void phys_box3d_step_subfunction(void)
     }
 }
 
+byte i, j, k;
+byte coord1, coord2;
+int8 delta_speed_x2, delta_speed;
+t_physics_box3d **pp_phys_obj, *p_phys_obj,**pp_phys_another_obj, *p_phys_another_obj;
+
 void phys_box3d_step(void)
 {
-    byte i, j, k;
-    byte coord1, coord2;
-    int8 delta_speed_x2, delta_speed;
-    t_physics_box3d **pp_phys_obj, *p_phys_obj,**pp_phys_another_obj, *p_phys_another_obj;
-
+    
     ++predivisor_friction;
 
     // step de la aceletacion de la gravedad

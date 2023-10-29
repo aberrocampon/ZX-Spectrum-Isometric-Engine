@@ -41,8 +41,8 @@ typedef struct
 
 void sprite_init(void);
 
-void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset);
-void sprite_set_frames_subset(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef, int first_frane_offset, int last_frane_offset);
+void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef);
+void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address);
 void sprite_next_frame(t_sprite *psprite);
 
 void sprite_draw(t_sprite *psprite);
