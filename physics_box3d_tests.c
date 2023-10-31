@@ -62,18 +62,10 @@ t_physics_box3d phys_box3d_wall_w =
     0, 0, 0
 };
 
-t_physics_box3d *phys_box3d_objects_table[N_MAX_PHYS_BOX3D_OBJECTS];
-byte n_phys_box3d_objects = 0;
+t_physics_box3d **pp_phys_box3d_objects_table;
+byte *p_n_phys_box3d_objects;
 
 byte predivisor_friction = 0;
-
-void phys_box3d_add_object_to_table(t_physics_box3d *p_phys_obj)
-{
-    if(n_phys_box3d_objects >= N_MAX_PHYS_BOX3D_OBJECTS) return;
-
-    // Añade a la tabla de objetos fisicos
-    phys_box3d_objects_table[n_phys_box3d_objects++] = p_phys_obj;
-}
 
 #ifdef PHYS_BOX3D_STEP_IN_DEVELOPMENT
 void phys_box3d_step(void)
@@ -613,6 +605,7 @@ void phys_box3d_step_subfunction(void)
     }
 }
 
+byte n_phys_box3d_objects;
 byte i, j, k;
 byte coord1, coord2;
 int8 delta_speed_x2, delta_speed;
@@ -620,13 +613,14 @@ t_physics_box3d **pp_phys_obj, *p_phys_obj,**pp_phys_another_obj, *p_phys_anothe
 
 void phys_box3d_step(void)
 {
-    
+    n_phys_box3d_objects = *p_n_phys_box3d_objects;
     ++predivisor_friction;
 
     // step de la aceletacion de la gravedad
-    for(i = 0, pp_phys_obj = phys_box3d_objects_table; i < n_phys_box3d_objects; i++, pp_phys_obj++)
+    for(i = 0, pp_phys_obj = pp_phys_box3d_objects_table; i < n_phys_box3d_objects; i++, pp_phys_obj++)
     {
         p_phys_obj = *pp_phys_obj;
+        if(!(p_phys_obj->enabled)) continue; // tiene el objeto deshabilitado su modelo fisico ?
 
         // Amplica gravedad
         if( !(p_phys_obj->flags & PHYS_BOX3D_FLAG_CINEMATIC) && !(--p_phys_obj->gravity_count) )
@@ -656,14 +650,16 @@ void phys_box3d_step(void)
 
     // for(k = 0; k < 1; k++)   // Cuando el jugador empuja 2 objetos en cadena y chocan con una pared, con 2 iteraciones no "rebotan"
     {
-        for(i = 0, pp_phys_obj = phys_box3d_objects_table; i < n_phys_box3d_objects - 1; i++, pp_phys_obj++)
+        for(i = 0, pp_phys_obj = pp_phys_box3d_objects_table; i < n_phys_box3d_objects - 1; i++, pp_phys_obj++)
         {
             p_phys_obj = *pp_phys_obj;
+            if(!(p_phys_obj->enabled)) continue; // tiene el objeto deshabilitado su modelo fisico ?
 
             j = i + 1; // bug del compilador ??
             for(pp_phys_another_obj = pp_phys_obj + 1; j < n_phys_box3d_objects; j++, pp_phys_another_obj++)
             {
                 p_phys_another_obj = *pp_phys_another_obj;
+                if(!(p_phys_another_obj->enabled)) continue; // tiene el objeto deshabilitado su modelo fisico ?
 
                 if(!(((p_phys_obj->box3d.pos_y + p_phys_obj->box3d.width_y) <= (p_phys_another_obj->box3d.pos_y - p_phys_another_obj->box3d.width_y)) || ((p_phys_obj->box3d.pos_y - p_phys_obj->box3d.width_y) >= (p_phys_another_obj->box3d.pos_y + p_phys_another_obj->box3d.width_y)) ||
                         ((p_phys_obj->box3d.pos_z + p_phys_obj->box3d.height) <= (p_phys_another_obj->box3d.pos_z - p_phys_another_obj->box3d.height)) || ((p_phys_obj->box3d.pos_z - p_phys_obj->box3d.height) >= (p_phys_another_obj->box3d.pos_z + p_phys_another_obj->box3d.height))))
@@ -776,9 +772,10 @@ void phys_box3d_step(void)
         }
     }
 
-    for(i = 0, pp_phys_obj = phys_box3d_objects_table; i < n_phys_box3d_objects; i++, pp_phys_obj++)
+    for(i = 0, pp_phys_obj = pp_phys_box3d_objects_table; i < n_phys_box3d_objects; i++, pp_phys_obj++)
     {
         p_phys_obj = *pp_phys_obj;
+        if(!(p_phys_obj->enabled)) continue; // tiene el objeto deshabilitado su modelo fisico ?
 
         p_phys_obj->box3d.pos_x += p_phys_obj->speed_x;
         p_phys_obj->box3d.pos_y += p_phys_obj->speed_y;

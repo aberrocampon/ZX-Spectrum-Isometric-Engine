@@ -19,7 +19,9 @@ t_b_vec3d pos_block_1 = { 50, 50, 35 };
 t_b_vec3d pos_block_2 = { 40, 50, 20 };
 t_b_vec3d pos_block_3 = { 70, 75, 40 };
 t_b_vec3d pos_ghost   = { 70, 30, 5 };
-t_b_vec3d pos_human_feet   = { 70, 30, 5 };
+t_b_vec3d pos_guardian_box3d = { 70, 30, 23 };
+t_b_vec3d pos_guardian_trunk = { 70, 30, 26 };
+t_b_vec3d pos_human_feet   = { 70, 30, 13 };
 
 /*******************************************************************************************************/
 
@@ -33,11 +35,14 @@ void main()
 	sprite_transfer_vdisplay();
 
 	isometric_reset_table();
-	isometric_add_object_to_table(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_2, PHYS_BOX3D_FLAG_CINEMATIC, behavior_cinematic_updown, 0);
-	isometric_add_object_to_table(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_3, PHYS_BOX3D_FLAG_CINEMATIC, behavior_cinematic_updown, 0);
-	isometric_add_object_to_table(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_GUARDIAN_TRUNK], &pos_block_0, 0, NULL, 0);
-	isometric_add_object_to_table(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_1, 0, NULL, 0);
-	isometric_add_object_to_table(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_HUMAN_FEET], &pos_human_feet, 0, behavior_controller_player, 0);
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_2, 1, PHYS_BOX3D_FLAG_CINEMATIC, behavior_cinematic_updown, 0));
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_3, 1, PHYS_BOX3D_FLAG_CINEMATIC, behavior_cinematic_updown, 0));
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_0, 1, 0, NULL, 0));
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_BLOCK], &pos_block_1, 1, 0, NULL, 0));
+
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_GUARDIAN_BOX3D], &pos_guardian_box3d, 1, 0, behavior_controller_player, 0));
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_GUARDIAN_TRUNK], &pos_guardian_trunk, 0, 0, NULL, 0));
+	isometric_add_object_to_table(isometric_create_object(&game_isometric_objects_table[GAME_ISOMETRIC_OBJ_TYPE_HUMAN_FEET], &pos_human_feet, 0, 0, NULL, 0));
 
 	// En estos momentos (18-09-2023) se observa aprox con 10 sprites en el bucle while(1)
 	// 256 refrescos en 22 segundos =>

@@ -77,13 +77,20 @@ void sprite_init(void)
 
 void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef)
 {
-	psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
-	psprite->width = psprite_graphdef->width;
-	psprite->height = psprite_graphdef->height;
-	psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
-	psprite->delta_sprite_y = psprite_graphdef->delta_sprite_y;
-	psprite->frame_size = psprite_graphdef->frame_size;
-	sprite_set_frames_subset(psprite, psprite_graphdef->graphic_bin_def, psprite_graphdef->graphic_bin_def + psprite_graphdef->total_frames_size);
+	if(psprite_graphdef)
+	{
+		psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+		psprite->width = psprite_graphdef->width;
+		psprite->height = psprite_graphdef->height;
+		psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
+		psprite->delta_sprite_y = psprite_graphdef->delta_sprite_y;
+		psprite->frame_size = psprite_graphdef->frame_size;
+		sprite_set_frames_subset(psprite, psprite_graphdef->graphic_bin_def, psprite_graphdef->graphic_bin_def + psprite_graphdef->total_frames_size);
+	}
+	else
+	{
+		psprite->first_frame = psprite->actual_frame = psprite->last_frame = NULL;
+	}
 }
 
 void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address)

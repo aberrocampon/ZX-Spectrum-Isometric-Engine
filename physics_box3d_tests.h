@@ -34,6 +34,7 @@ typedef struct physics_box3d
 	int8 speed_x;
 	int8 speed_y;
 	int8 speed_z;
+	byte enabled;
 	// contador para reducir el efecto de la garvedad.
 	byte gravity_count;
 	// contacto del objeto caja en las 6 cara con otros objetos, o paredes, techo y suelo
@@ -50,13 +51,9 @@ extern byte isometric_max_x_3d;
 extern byte isometric_max_y_3d;
 extern byte isometric_max_z_3d;
 
-extern t_physics_box3d phys_box3d_room;
+extern t_physics_box3d **pp_phys_box3d_objects_table;
+extern byte *p_n_phys_box3d_objects;
 
-extern byte n_phys_box3d_objects;
-
-#define phys_box3d_reset_table() {n_phys_box3d_objects = 0;}
-
-void phys_box3d_add_object_to_table(t_physics_box3d *p_phys_obj);
 void phys_box3d_step(void);
 
 #endif

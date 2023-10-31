@@ -474,6 +474,10 @@ t_isometric_obj_def game_isometric_objects_table[] =
 		&game_spr_graph_def_ghost
 	},
 	{
+		{ 6, 6, 13 },
+		NULL
+	},
+	{
 		{ 6, 6, 3 },
 		&game_spr_graph_def_human_feet
 	},
