@@ -22,7 +22,7 @@ void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj)
     isometric_objects_table[n_isometric_objects++] = p_isometric_obj;
 }
 
-t_isometric_obj *isometric_create_object(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter)
+t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_obj_graphic_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter)
 {
 	byte i;
 	byte *p;
@@ -31,6 +31,8 @@ t_isometric_obj *isometric_create_object(t_isometric_obj_def *p_isometric_obj_de
 	if(n_created_isometric_objects >= N_MAX_CREATED_ISOMETRIC_OBJECTS) return NULL;
 
 	p_isometric_obj = &created_isometric_objects_table[n_created_isometric_objects++];
+
+	p_isometric_obj->graphic_type_index = graphic_type_index;
 
 	p_isometric_obj->physics.box3d.pos_x = p_init_pos->x;
 	p_isometric_obj->physics.box3d.pos_y = p_init_pos->y;
@@ -58,6 +60,28 @@ t_isometric_obj *isometric_create_object(t_isometric_obj_def *p_isometric_obj_de
 
 	return p_isometric_obj;
 
+}
+
+void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_isometric_object_def *isometric_objects_def_table, t_isometric_obj_graphic_def *isometric_obj_graphic_def_table)
+{
+	byte i;
+	t_isometric_object_def *p_isometric_objects_def;
+
+	for(i = 0; i < n_isometric_objects_def; i++)
+	{
+		p_isometric_objects_def = &isometric_objects_def_table[i];
+		isometric_add_object_to_table(
+										isometric_create_object(
+																p_isometric_objects_def->graphic_type_index,
+																&isometric_obj_graphic_def_table[p_isometric_objects_def->graphic_type_index], 
+																&(p_isometric_objects_def->init_pos), 
+																p_isometric_objects_def->physics_enabled,
+																p_isometric_objects_def->init_flags,
+																p_isometric_objects_def->behavior,
+																p_isometric_objects_def->behavior_parameter
+																)
+										);
+	}
 }
 
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj)

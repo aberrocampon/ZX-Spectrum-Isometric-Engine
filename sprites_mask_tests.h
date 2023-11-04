@@ -40,6 +40,7 @@ typedef struct
 } t_sprite_graphic_def;
 
 void sprite_init(void);
+void sprite_init_background(void);
 
 void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef);
 void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address);

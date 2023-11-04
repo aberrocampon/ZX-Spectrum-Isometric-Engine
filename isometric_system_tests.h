@@ -41,6 +41,8 @@ typedef struct isometric_obj
 	void (*behavior)(struct isometric_obj **);
 	// sprite grafico
 	t_sprite sprite;
+	// identificador de tipo grafico del objeto isometrico. En la practica indice de una tabla de t_isometric_obj_graphic_def del juego
+	byte graphic_type_index;
 } t_isometric_obj;
 
 typedef struct
@@ -49,7 +51,17 @@ typedef struct
 	t_b_vec3d size;
 	// sprite grafico
 	t_sprite_graphic_def *p_sprite_def;
-} t_isometric_obj_def;
+} t_isometric_obj_graphic_def;
+
+typedef struct
+{
+    byte graphic_type_index; // en realidad indice de una tabla de t_isometric_obj_graphic_def del juego
+    t_b_vec3d init_pos;
+    byte physics_enabled;
+    byte init_flags;
+    void (*behavior)(t_isometric_obj **);
+    byte behavior_parameter;
+} t_isometric_object_def;
 
 extern byte isometric_origen_proj_x;
 extern byte isometric_origen_proj_y;
@@ -66,7 +78,8 @@ extern byte n_created_isometric_objects;
 #define isometric_reset_objects_ordering() {n_ordered_isometric_objects = 0;}
 
 void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj);
-t_isometric_obj *isometric_create_object(t_isometric_obj_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter);
+t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_obj_graphic_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter);
+void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_isometric_object_def *isometric_objects_def_table, t_isometric_obj_graphic_def *isometric_obj_graphic_def_table);
 void isometric_step(void);
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj);
 void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj);

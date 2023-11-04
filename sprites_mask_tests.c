@@ -47,13 +47,10 @@ void precalculate_shift_tables(void)
 	}
 }
 
-void sprite_init(void)
+void sprite_init_background(void)
 {
 	int i;
 	byte *p_attribs_buffer = (byte *)0x5800;
-
-	precalculate_flip_byte_table();
-	precalculate_shift_tables();
 
 	for(i=0; i<0x1800; i++)
 	{
@@ -73,6 +70,12 @@ void sprite_init(void)
 	{
 		*p_attribs_buffer = 7;
 	}
+}
+
+void sprite_init(void)
+{
+	precalculate_flip_byte_table();
+	precalculate_shift_tables();
 }
 
 void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef)

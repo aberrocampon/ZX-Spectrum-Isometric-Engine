@@ -463,7 +463,7 @@ t_sprite_graphic_def game_spr_graph_def_guardian_trunk =
 /***********************************************************************/
 // Tabla de objetos del juego
 
-t_isometric_obj_def game_isometric_objects_table[] = 
+t_isometric_obj_graphic_def game_isometric_objects_table[] = 
 {
     {
 		{ 8, 8, 6 },

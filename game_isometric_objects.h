@@ -31,9 +31,9 @@ extern byte graph_bin_def_guardian_trunk_moving_n_e[];
 #define GAME_SPRITE_LAST_FRAME_GUARDIAN_TRUNK_MOVING_N_E (graph_bin_def_guardian_trunk_moving_n_e + 1*(6*23 + 1))
 
 /***********************************************************************/
-// Tabla de objetos del juego y sus IDs
+// Tabla de objetos del juego
 
-extern t_isometric_obj_def game_isometric_objects_table[];
+extern t_isometric_obj_graphic_def game_isometric_objects_table[];
 
 #define GAME_ISOMETRIC_OBJ_TYPE_BLOCK (0)
 #define GAME_ISOMETRIC_OBJ_TYPE_GHOST (1)

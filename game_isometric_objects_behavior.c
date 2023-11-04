@@ -1,4 +1,5 @@
 #include "game_isometric_objects.h"
+#include "game_map.h"
 #include "keyboard.h"
 
 t_isometric_obj *p_isometric_obj;
@@ -121,6 +122,7 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	if(keyboard_is_key_pressed_5()) 
 	{
 		if(!(nframes & 1)) sprite_next_frame(&(p_isometric_subobj_2->sprite));
+		game_map_move_player_2_room(game_map_actual_room ^ 1, 30, 30, 23);
 	}
 }
 
