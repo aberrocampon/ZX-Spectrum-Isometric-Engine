@@ -65,20 +65,20 @@ t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_ob
 void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_isometric_object_def *isometric_objects_def_table, t_isometric_obj_graphic_def *isometric_obj_graphic_def_table)
 {
 	byte i;
-	t_isometric_object_def *p_isometric_objects_def;
+	t_isometric_object_def *p_isometric_object_def;
 
 	for(i = 0; i < n_isometric_objects_def; i++)
 	{
-		p_isometric_objects_def = &isometric_objects_def_table[i];
+		p_isometric_object_def = &isometric_objects_def_table[i];
 		isometric_add_object_to_table(
 										isometric_create_object(
-																p_isometric_objects_def->graphic_type_index,
-																&isometric_obj_graphic_def_table[p_isometric_objects_def->graphic_type_index], 
-																&(p_isometric_objects_def->init_pos), 
-																p_isometric_objects_def->physics_enabled,
-																p_isometric_objects_def->init_flags,
-																p_isometric_objects_def->behavior,
-																p_isometric_objects_def->behavior_parameter
+																p_isometric_object_def->graphic_type_index,
+																&isometric_obj_graphic_def_table[p_isometric_object_def->graphic_type_index],
+																&(p_isometric_object_def->init_pos), 
+																p_isometric_object_def->physics_enabled,
+																p_isometric_object_def->init_flags,
+																p_isometric_object_def->behavior,
+																p_isometric_object_def->behavior_parameter
 																)
 										);
 	}
@@ -86,17 +86,15 @@ void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_i
 
 void isometric_proj_obj(t_isometric_obj *p_isometric_obj)
 {
-	p_isometric_obj->sprite.pos_x = 
+	p_isometric_obj->sprite.pos_x_ref = 
 				isometric_origen_proj_x -
 				p_isometric_obj->physics.box3d.pos_x + 
-				p_isometric_obj->physics.box3d.pos_y +
-				p_isometric_obj->sprite.delta_sprite_x;
-	p_isometric_obj->sprite.pos_y = 
+				p_isometric_obj->physics.box3d.pos_y;
+	p_isometric_obj->sprite.pos_y_ref = 
 				isometric_origen_proj_y +
 				((p_isometric_obj->physics.box3d.pos_x)>>1) + 
 				((p_isometric_obj->physics.box3d.pos_y)>>1) -
-				p_isometric_obj->physics.box3d.pos_z +
-				p_isometric_obj->sprite.delta_sprite_y;
+				p_isometric_obj->physics.box3d.pos_z;
 }
 
 void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)

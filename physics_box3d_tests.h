@@ -50,6 +50,14 @@ typedef struct physics_box3d
 extern byte isometric_max_x_3d;
 extern byte isometric_max_y_3d;
 extern byte isometric_max_z_3d;
+extern byte half_isometric_max_x_3d;
+extern byte half_isometric_max_y_3d;
+extern byte half_isometric_max_z_3d;
+
+extern t_physics_box3d phys_box3d_wall_n;
+extern t_physics_box3d phys_box3d_wall_s;
+extern t_physics_box3d phys_box3d_wall_e;
+extern t_physics_box3d phys_box3d_wall_w;
 
 extern t_physics_box3d **pp_phys_box3d_objects_table;
 extern byte *p_n_phys_box3d_objects;

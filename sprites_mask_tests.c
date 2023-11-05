@@ -47,6 +47,44 @@ void precalculate_shift_tables(void)
 	}
 }
 
+void sprite_clear_vdisplay(void)
+{
+	#asm
+		ld hl, _vdisplay_bin_buff
+		ld d, h
+		ld e, l
+		inc e
+		ld bc, 6143
+		ld (hl), 0
+		ldir
+	#endasm
+}
+
+byte att;
+void sprite_set_attrib(byte attrib)
+{
+	att = attrib;
+	#asm
+		ld hl, 0x5800
+		ld d, h
+		ld e, l
+		inc e
+		ld bc, 767
+		ld a, (_att)
+		ld (hl), a
+		ldir
+	#endasm
+}
+
+void sprite_set_border(byte border)
+{
+	att = border;
+	#asm
+		ld a, (_att)
+		out (0xfe), a
+	#endasm
+}
+
 void sprite_init_background(void)
 {
 	int i;
@@ -85,8 +123,7 @@ void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_gra
 		psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
 		psprite->width = psprite_graphdef->width;
 		psprite->height = psprite_graphdef->height;
-		psprite->delta_sprite_x = psprite_graphdef->delta_sprite_x;
-		psprite->delta_sprite_y = psprite_graphdef->delta_sprite_y;
+		psprite->width_px = precalculated_shift_tables[0xb00 + psprite->width]; // x 8
 		psprite->frame_size = psprite_graphdef->frame_size;
 		sprite_set_frames_subset(psprite, psprite_graphdef->graphic_bin_def, psprite_graphdef->graphic_bin_def + psprite_graphdef->total_frames_size);
 	}
@@ -321,13 +358,19 @@ void sprite_draw(t_sprite *psprite)
 	if( aux != (*p_gbd & SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) )
 	{
 		*p_gbd = (*p_gbd & ~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H) | aux;
-		p_gbd++;
+		p_gbd += 3;
 		sprite_flip_h();
+		// ajusta delta_x (desplazamiento del punto de referencia del sprite respecto a esquina superior izquierda)
+		p_gbd -= 2;
+		*p_gbd = 1 - psprite->width_px - *p_gbd;
 	}
 	else
 	{
 		p_gbd++;
 	}
+	// desplazar coordenadas de referencia en la pantalla a coordenadas de la esquina superior izquierda en donde se dibujara el sprite
+	psprite->pos_x = psprite->pos_x_ref + *p_gbd++;
+	psprite->pos_y = psprite->pos_y_ref + *p_gbd++;
 	/////////////////////////////////////////////////////////
 
 	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
@@ -546,7 +589,7 @@ void sprite_restore_vdisplay(t_sprite *psprite)
 	#endasm
 }
 
-void sprite_transfer_vdisplay(void)
+void sprite_transfer_vdisplay_2_phys_display(void)
 {
 
 	#asm
@@ -605,6 +648,54 @@ void sprite_transfer_vdisplay(void)
 	l_transfer_vdisplay_2:
 		pop bc
 		djnz l_transfer_vdisplay_1
+	#endasm
+}
+
+
+void sprite_transfer_vdisplay_2_background_vdisplay(void)
+{
+	#asm
+		ld hl, _vdisplay_bin_buff
+		ld de, _background_vdisplay_bin_buff
+		ld b, 192
+	l_transfer_vdisplay_2_background_vdisp_1:
+		push bc
+		;ld bc, 32
+		;ldir
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		ldi
+		pop bc
+		djnz l_transfer_vdisplay_2_background_vdisp_1
 	#endasm
 }
 

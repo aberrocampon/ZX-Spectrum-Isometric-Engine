@@ -8,6 +8,10 @@ byte isometric_max_x_3d = PHYS_BOX3D_MAX_X_3D_DEFFAULT;
 byte isometric_max_y_3d = PHYS_BOX3D_MAX_Y_3D_DEFFAULT;
 byte isometric_max_z_3d = PHYS_BOX3D_MAX_Z_3D_DEFFAULT;
 
+byte half_isometric_max_x_3d = (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1);
+byte half_isometric_max_y_3d = (PHYS_BOX3D_MAX_Y_3D_DEFFAULT>>1);
+byte half_isometric_max_z_3d = (PHYS_BOX3D_MAX_Z_3D_DEFFAULT>>1);
+
 t_physics_box3d phys_box3d_floor = 
 {
     {
