@@ -42,6 +42,8 @@ void behavior_player_set_pointers(t_isometric_obj **pp_isometric_obj_player)
 	p_isometric_subobj_2 = pp_isometric_obj_player[2];
 }
 
+#define DELTA_SPEED_PLAYER (1)
+
 void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 {
 	behavior_player_set_pointers(pp_isometric_obj_player);
@@ -77,7 +79,7 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	{
 		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
-			p_isometric_obj->physics.speed_y = p_isometric_obj->physics.p_phys_obj_touching_d->speed_y - 1;
+			p_isometric_obj->physics.speed_y = p_isometric_obj->physics.p_phys_obj_touching_d->speed_y - DELTA_SPEED_PLAYER;
 		}
 
 		if(player_last_orientation != ISOMETRIC_ORIENTATION_N)
@@ -95,7 +97,7 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	{
 		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
-			p_isometric_obj->physics.speed_y = p_isometric_obj->physics.p_phys_obj_touching_d->speed_y + 1;
+			p_isometric_obj->physics.speed_y = p_isometric_obj->physics.p_phys_obj_touching_d->speed_y + DELTA_SPEED_PLAYER;
 		}
 
 		if(player_last_orientation != ISOMETRIC_ORIENTATION_S)
@@ -113,7 +115,7 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	{
 		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
-			p_isometric_obj->physics.speed_x = p_isometric_obj->physics.p_phys_obj_touching_d->speed_x - 1;
+			p_isometric_obj->physics.speed_x = p_isometric_obj->physics.p_phys_obj_touching_d->speed_x - DELTA_SPEED_PLAYER;
 		}
 
 		if(player_last_orientation != ISOMETRIC_ORIENTATION_E)
@@ -131,7 +133,7 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	{
 		if(p_isometric_obj->physics.flags & PHYS_BOX3D_FLAG_TOUCH_D)
 		{
-			p_isometric_obj->physics.speed_x = p_isometric_obj->physics.p_phys_obj_touching_d->speed_x + 1;
+			p_isometric_obj->physics.speed_x = p_isometric_obj->physics.p_phys_obj_touching_d->speed_x + DELTA_SPEED_PLAYER;
 		}
 
 		if(player_last_orientation != ISOMETRIC_ORIENTATION_W)

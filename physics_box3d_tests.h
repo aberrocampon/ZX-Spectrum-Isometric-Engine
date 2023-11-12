@@ -31,6 +31,9 @@ typedef struct physics_box3d
 {
 	// posicion 3d origen es el vertice del plano inferior y con menor x e y de la caja que contiene la forma
 	t_box3d box3d;
+	byte last_pos_x;
+	byte last_pos_y;
+	byte last_pos_z;
 	int8 speed_x;
 	int8 speed_y;
 	int8 speed_z;

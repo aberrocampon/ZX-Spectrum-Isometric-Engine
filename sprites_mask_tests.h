@@ -20,6 +20,8 @@ typedef struct
 	byte to_update_width, to_update_height;
 	byte width, height; // width in bytes, not pixels
 	byte width_px; // width in pixels
+	byte moved_or_changed; // moved so need to be erased and redrawn, also the same in case changed frame or flip state
+	byte redraw_not_moved; // not moved or chabged state but redraw in virtual buffer because another sprite is erased over it or redrawn below it
 	int frame_size; // size of a frame ( width * height * 2 in bytes, is *2 because of the mask acoompaning the graphic)
 	byte *first_frame;
 	byte *last_frame;
@@ -53,5 +55,6 @@ void sprite_restore_vdisplay(t_sprite *psprite);
 void sprite_transfer_vdisplay_2_phys_display(void);
 void sprite_transfer_vdisplay_2_background_vdisplay(void);
 void sprite_transfer_and_restore_vdisplay(void);
+void sprite_erase_with_zeros(t_sprite *psprite);
 
 #endif

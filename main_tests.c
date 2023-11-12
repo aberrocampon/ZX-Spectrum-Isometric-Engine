@@ -6,11 +6,12 @@
  * 
  */
 
-#pragma output CRT_ORG_CODE          = 0x7700
+#pragma output CRT_ORG_CODE          = 0x7000
 
 #include "keyboard.h"
 #include "game_isometric_objects.h"
 #include "game_isometric_objects_behavior.h"
+#include "game_map.h"
 
 void main()
 {

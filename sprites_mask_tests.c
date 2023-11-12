@@ -124,6 +124,8 @@ void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_gra
 		psprite->width = psprite_graphdef->width;
 		psprite->height = psprite_graphdef->height;
 		psprite->width_px = precalculated_shift_tables[0xb00 + psprite->width]; // x 8
+		psprite->moved_or_changed = 1;
+		psprite->redraw_not_moved = 1;
 		psprite->frame_size = psprite_graphdef->frame_size;
 		sprite_set_frames_subset(psprite, psprite_graphdef->graphic_bin_def, psprite_graphdef->graphic_bin_def + psprite_graphdef->total_frames_size);
 	}
@@ -137,6 +139,7 @@ void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte
 {
 	psprite->first_frame = psprite->actual_frame = first_frane_address;
 	psprite->last_frame = last_frane_address;
+	psprite->moved_or_changed = 1;
 }
 
 void sprite_next_frame(t_sprite *psprite)
@@ -146,22 +149,24 @@ void sprite_next_frame(t_sprite *psprite)
 	{
 		psprite->actual_frame = psprite->first_frame;
 	}
+	psprite->moved_or_changed = 1;
 }
 
 int guarda_sp;
 byte width;
-byte height;
+byte sprgbl_height;
 byte *p_gbd;
-byte *p_vdisp;
-byte *p_disp;
+byte *sprgbl_p_vdisp;
+byte *sprgbl_p_disp;
 byte p_shift_table_high;
 byte mask_start;
 byte mask_end;
-int incr_v_ptr_disp;
-int iWidth;
+int sprgbl_incr_v_ptr_disp;
+int sprgbl_iWidth;
 byte mask_start_array[] = {0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 byte mask_end_array[] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x7, 0x03, 0x01};
 byte half_width;
+t_sprite *sprgbl_psprite;
 
 void sprite_flip_h(void)
 {
@@ -207,7 +212,7 @@ void sprite_flip_h(void)
 	l_sprite_flip_h_2:
 		ld a, (_half_width)
 		ex af, af
-		ld a, (_height)
+		ld a, (_sprgbl_height)
 
 	; En el bucle, por linea del bitmap:
 	; hl  : byte izquierdo de la linea actual del bitmap (el siguiente byte es su mascara)
@@ -281,7 +286,7 @@ void sprite_flip_h(void)
 		exx
 		ld e, a
 		ld d, 0
-		ld a, (_height)
+		ld a, (_sprgbl_height)
 		ld b, a
 	l_sprite_flip_h_5:
 		exx
@@ -349,8 +354,14 @@ void sprite_draw(t_sprite *psprite)
 {	
 	byte x0, x1, aux;
 
+	if(!(psprite->moved_or_changed || psprite->redraw_not_moved))
+	{
+		return;
+	}
+	psprite->redraw_not_moved = 0;
+
 	width = psprite->width;
-	height = psprite->height;
+	sprgbl_height = psprite->height;
 	p_gbd = psprite->actual_frame;
 
 	// actualizar al fipado horizontal requerido /////////////
@@ -373,11 +384,11 @@ void sprite_draw(t_sprite *psprite)
 	psprite->pos_y = psprite->pos_y_ref + *p_gbd++;
 	/////////////////////////////////////////////////////////
 
-	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
+	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->pos_y))<<5) + (((unsigned int)(psprite->pos_x))>>3);
 	p_shift_table_high = 0xf0 | (((psprite->pos_x)&7)<<1);
 	mask_start = mask_start_array[(psprite->pos_x)&7];
 	mask_end = mask_end_array[(psprite->pos_x)&7];
-	incr_v_ptr_disp = 32 - width;
+	sprgbl_incr_v_ptr_disp = 32 - width;
 
 	#asm
 		di
@@ -386,10 +397,10 @@ void sprite_draw(t_sprite *psprite)
 
         ld a ,(_p_shift_table_high)
 		ld h, a
-		ld de, (_p_vdisp)
+		ld de, (_sprgbl_p_vdisp)
 
 		exx
-		ld a, (_height)
+		ld a, (_sprgbl_height)
 		ld c, a
 		ld a, (_width)
 		ld d, a
@@ -448,7 +459,7 @@ void sprite_draw(t_sprite *psprite)
 		and (hl)                    ; 7
 		or b                        ; 4
 		ld (hl),a                   ; 7
-		ld bc, (_incr_v_ptr_disp)   ; 20
+		ld bc, (_sprgbl_incr_v_ptr_disp)   ; 20
 		add hl, bc                  ; 11
 		ex de, hl                   ; 4
 
@@ -513,31 +524,32 @@ void sprite_draw(t_sprite *psprite)
 
 void sprite_update_display(t_sprite *psprite)
 {
-	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->to_update_y))<<5) + (((unsigned int)(psprite->to_update_x))>>3);
-	p_disp = (byte *) (0x4000 + 
+/*
+	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->to_update_y))<<5) + (((unsigned int)(psprite->to_update_x))>>3);
+	sprgbl_p_disp = (byte *) (0x4000 + 
 			((((unsigned int)(psprite->to_update_y)) & 0xc0) << 5) + ((((unsigned int)(psprite->to_update_y))&0x7)<<8) +
 			((((unsigned int)(psprite->to_update_y))&0x38)<<2) + (((unsigned int)(psprite->to_update_x))>>3) );
-	iWidth = psprite->to_update_width;
-	height = psprite->to_update_height;
-	incr_v_ptr_disp = 32 - iWidth;
+	sprgbl_iWidth = psprite->to_update_width;
+	sprgbl_height = psprite->to_update_height;
+	sprgbl_incr_v_ptr_disp = 32 - sprgbl_iWidth;
 
 	#asm
 		di
 
-		ld hl, (_p_vdisp)
-		ld de, (_p_disp)
-		ld a, (_height)
+		ld hl, (_sprgbl_p_vdisp)
+		ld de, (_sprgbl_p_disp)
+		ld a, (_sprgbl_height)
 	l_update_display_sprite_1:
-		ex af, af
-		ld bc, (_iWidth)
-		ldir
-		ld bc, (_incr_v_ptr_disp)
-		add hl, bc
-		ld de, (_p_disp)
-		inc d
-		ld a, d
-		and 7
-		jr nz, l_update_display_sprite_2
+		ex af, af								; 5
+		ld bc, (_sprgbl_iWidth)					; 22
+		ldir									; n x 23 - 5
+		ld bc, (_sprgbl_incr_v_ptr_disp)		; 22
+		add hl, bc								; 12
+		ld de, (_sprgbl_p_disp)					; 22
+		inc d									; 5
+		ld a, d									; 5
+		and 7									; 8
+		jr nz, l_update_display_sprite_2		; 13
 		ld a, e
 		add a, 0x20
 		ld e, a
@@ -546,37 +558,262 @@ void sprite_update_display(t_sprite *psprite)
 		sub a, 8
 		ld d, a
 	l_update_display_sprite_2:
-	    ld (_p_disp), de
-		ex af, af
-		dec a
-		jr nz, l_update_display_sprite_1
+	    ld (_sprgbl_p_disp), de					; 22
+		ex af, af								; 5
+		dec a									; 5
+		jr nz, l_update_display_sprite_1		; 13
 
 		ei
 
 	#endasm
+*/
+	sprgbl_psprite = psprite;
+
+	if(!(sprgbl_psprite->moved_or_changed)) return;
+
+	sprgbl_psprite->moved_or_changed = 0;
+	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(sprgbl_psprite->to_update_y))<<5) + (((unsigned int)(sprgbl_psprite->to_update_x))>>3);
+	sprgbl_p_disp = (byte *) (0x4000 + 
+			((((unsigned int)(sprgbl_psprite->to_update_y)) & 0xc0) << 5) + ((((unsigned int)(sprgbl_psprite->to_update_y))&0x7)<<8) +
+			((((unsigned int)(sprgbl_psprite->to_update_y))&0x38)<<2) + (((unsigned int)(sprgbl_psprite->to_update_x))>>3) );
+	sprgbl_iWidth = sprgbl_psprite->to_update_width;
+	sprgbl_height = sprgbl_psprite->to_update_height;
+
+	#asm
+		di
+		ld (_guarda_sp), sp
+
+		ld a, (_sprgbl_height)
+		ld b, a
+		ld a, (_sprgbl_iWidth)
+		cp 7
+		jp nc, l_update_display_sprite_more_than_6_bytes
+		cp 1
+		jp z, l_update_display_sprite_more_than_6_bytes
+
+		exx
+		ld c, a
+		ld hl, (_sprgbl_p_disp)	
+		add a, l
+		ld l, a
+		ld a, c
+		exx
+		ld hl, (_sprgbl_p_vdisp)
+		ld de, 32
+		cp 3
+		jr z, l_sprite_update_display_3_bytes_loop
+		cp 4
+		jr z, l_sprite_update_display_4_bytes_loop
+		cp 5
+		jr z, l_sprite_update_display_5_bytes_loop
+		cp 6
+		jp z, l_sprite_update_display_6_bytes_loop
+
+	l_sprite_update_display_2_bytes_loop:
+		ld sp, hl
+		exx
+		pop de
+		ld sp, hl
+		push de
+		inc h
+		ld a, h
+		and 7
+		jr z, l_sprite_update_display_inc_display_ptr_row_2_bytes
+	l_sprite_update_display_inc_display_ptr_row_2_bytes_continue:
+		exx
+		add hl, de
+		djnz l_sprite_update_display_2_bytes_loop
+		jp l_sprite_update_display_end
+	l_sprite_update_display_inc_display_ptr_row_2_bytes:
+		ld a, l
+		add a, 32
+		ld l, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_2_bytes_continue
+		ld a, h
+		sub 8
+		ld h, a
+		jr l_sprite_update_display_inc_display_ptr_row_2_bytes_continue
+
+	l_sprite_update_display_3_bytes_loop:
+		ld sp, hl
+		exx
+		pop bc
+		dec sp
+		pop de
+		ld sp, hl
+		push de
+		inc sp
+		push bc
+		inc h
+		ld a, h
+		and 7
+		jr z, l_sprite_update_display_inc_display_ptr_row_3_bytes
+	l_sprite_update_display_inc_display_ptr_row_3_bytes_continue:
+		exx
+		add hl, de
+		djnz l_sprite_update_display_3_bytes_loop
+		jp l_sprite_update_display_end
+	l_sprite_update_display_inc_display_ptr_row_3_bytes:
+		ld a, l
+		add a, 32
+		ld l, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_3_bytes_continue
+		ld a, h
+		sub 8
+		ld h, a
+		jr l_sprite_update_display_inc_display_ptr_row_3_bytes_continue
+
+	l_sprite_update_display_4_bytes_loop:
+		ld sp, hl
+		exx
+		pop bc
+		pop de
+		ld sp, hl
+		push de
+		push bc
+		inc h
+		ld a, h
+		and 7
+		jr z, l_sprite_update_display_inc_display_ptr_row_4_bytes
+	l_sprite_update_display_inc_display_ptr_row_4_bytes_continue:
+		exx
+		add hl, de
+		djnz l_sprite_update_display_4_bytes_loop
+		jp l_sprite_update_display_end
+	l_sprite_update_display_inc_display_ptr_row_4_bytes:
+		ld a, l
+		add a, 32
+		ld l, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_4_bytes_continue
+		ld a, h
+		sub 8
+		ld h, a
+		jr l_sprite_update_display_inc_display_ptr_row_4_bytes_continue
+
+	l_sprite_update_display_5_bytes_loop:
+		ld sp, hl				; 7
+		exx						; 5
+		pop af					; 11
+		dec sp					; 7
+		pop bc					; 11
+		pop de					; 11
+		ld sp, hl 				; 7
+		push de					; 12
+		push bc					; 12
+		inc sp					; 7
+		push af					; 12
+		inc h					; 5
+		ld a, h					; 5
+		and 7					; 8
+		jr z, l_sprite_update_display_inc_display_ptr_row_5_bytes 		; 8
+	l_sprite_update_display_inc_display_ptr_row_5_bytes_continue:
+		exx						; 5
+		add hl, de				; 12
+		djnz l_sprite_update_display_5_bytes_loop 						; 14
+		jr l_sprite_update_display_end
+	l_sprite_update_display_inc_display_ptr_row_5_bytes:
+		ld a, l
+		add a, 32
+		ld l, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_5_bytes_continue
+		ld a, h
+		sub 8
+		ld h, a
+		jr l_sprite_update_display_inc_display_ptr_row_5_bytes_continue
+
+	l_sprite_update_display_6_bytes_loop:
+		ld sp, hl
+		exx
+		pop af
+		pop bc
+		pop de
+		ld sp, hl
+		push de
+		push bc
+		push af
+		inc h
+		ld a, h
+		and 7
+		jr z, l_sprite_update_display_inc_display_ptr_row_6_bytes
+	l_sprite_update_display_inc_display_ptr_row_6_bytes_continue:
+		exx
+		add hl, de
+		djnz l_sprite_update_display_6_bytes_loop
+		jr l_sprite_update_display_end
+	l_sprite_update_display_inc_display_ptr_row_6_bytes:
+		ld a, l
+		add a, 32
+		ld l, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_6_bytes_continue
+		ld a, h
+		sub 8
+		ld h, a
+		jr l_sprite_update_display_inc_display_ptr_row_6_bytes_continue
+
+	l_update_display_sprite_more_than_6_bytes:
+		ld a, 32
+		ld de, (_sprgbl_iWidth)
+		sub e
+		ld e, a
+		ld (_sprgbl_incr_v_ptr_disp), de
+		ld hl, (_sprgbl_p_vdisp)
+		ld de, (_sprgbl_p_disp)
+		ld a, b
+	l_update_display_sprite_more_than_6_bytes_loop:
+		ex af, af
+		ld bc, (_sprgbl_iWidth)
+		ldir
+		ld bc, (_sprgbl_incr_v_ptr_disp)
+		add hl, bc
+		ld de, (_sprgbl_p_disp)
+		inc d
+		ld a, d
+		and 7
+		jr z, l_sprite_update_display_inc_display_ptr_row_more_than_6_bytes
+	l_sprite_update_display_inc_display_ptr_row_more_than_6_bytes_continue:
+	    ld (_sprgbl_p_disp), de
+		ex af, af
+		dec a
+		jr nz, l_update_display_sprite_more_than_6_bytes_loop
+	l_sprite_update_display_inc_display_ptr_row_more_than_6_bytes:
+		ld a, e
+		add a, 32
+		ld e, a
+		jr c, l_sprite_update_display_inc_display_ptr_row_more_than_6_bytes_continue
+		ld a, d
+		sub 8
+		ld d, a
+		jr l_sprite_update_display_inc_display_ptr_row_more_than_6_bytes_continue
+
+	l_sprite_update_display_end:
+		ld sp, (_guarda_sp)
+		ei
+
+	#endasm
+
 }
 
 void sprite_restore_vdisplay(t_sprite *psprite)
 {
 	if((psprite->last_y) == 255) return; // el sprite no fue dibujado en el buffer virtual, no debe ser restaurado el buffer
 
-	p_disp = background_vdisplay_bin_buff + (((unsigned int)(psprite->last_y))<<5) + (((unsigned int)(psprite->last_x))>>3);
-	p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->last_y))<<5) + (((unsigned int)(psprite->last_x))>>3);
-	iWidth = psprite->width;
-	if((psprite->last_x) & 7) iWidth++;
-	height = psprite->height;
-	incr_v_ptr_disp = 32 - iWidth;
+	sprgbl_p_disp = background_vdisplay_bin_buff + (((unsigned int)(psprite->last_y))<<5) + (((unsigned int)(psprite->last_x))>>3);
+	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(psprite->last_y))<<5) + (((unsigned int)(psprite->last_x))>>3);
+	sprgbl_iWidth = psprite->width;
+	if((psprite->last_x) & 7) sprgbl_iWidth++;
+	sprgbl_height = psprite->height;
+	sprgbl_incr_v_ptr_disp = 32 - sprgbl_iWidth;
 
 	#asm
 		di
 
-		ld hl, (_p_disp)                               ; 16
-		ld de, (_p_vdisp)                              ; 20
-		ld a, (_height)                                ; 13
+		ld hl, (_sprgbl_p_disp)                               ; 16
+		ld de, (_sprgbl_p_vdisp)                              ; 20
+		ld a, (_sprgbl_height)                                ; 13
 	l_restore_vdisplay_sprite_1:
-		ld bc, (_iWidth)                               ; 20
+		ld bc, (_sprgbl_iWidth)                               ; 20
 		ldir                                           ; 21 / 16   (bc * 21 - 5)
-		ld bc, (_incr_v_ptr_disp)                      ; 20
+		ld bc, (_sprgbl_incr_v_ptr_disp)                      ; 20
 		add hl, bc                                     ; 11
 		ex de,hl                                       ; 4
 		add hl, bc                                     ; 11
@@ -937,6 +1174,186 @@ void sprite_transfer_and_restore_vdisplay(void)
 		ex af, af
 		dec a
 		jp nz, l_transfer_and_restore_vdisplay_1
+
+		ld sp, (_guarda_sp)
+		ei
+	#endasm
+}
+
+void sprite_erase_with_zeros(t_sprite *psprite)
+{
+	sprgbl_psprite = psprite;
+
+	if(((sprgbl_psprite->last_y) == 255) || !(sprgbl_psprite->moved_or_changed)) return; // el sprite no fue dibujado en el buffer virtual, no debe ser restaurado el buffer
+
+	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(sprgbl_psprite->last_y))<<5) + (((unsigned int)(sprgbl_psprite->last_x))>>3);
+	sprgbl_iWidth = sprgbl_psprite->width;
+	if((sprgbl_psprite->last_x) & 7) sprgbl_iWidth++;
+	sprgbl_height = sprgbl_psprite->height;
+	sprgbl_incr_v_ptr_disp = 32 + sprgbl_iWidth;
+
+	
+	#asm
+		di
+		ld (_guarda_sp), sp
+
+		ld a, (_sprgbl_height)
+		ld b, a
+		ld hl, (_sprgbl_p_vdisp)
+
+		ld a, (_sprgbl_iWidth)
+		cp 1
+		jr z, l_sprite_erase_w_zeros_1_byte
+
+		ld de, (_sprgbl_iWidth)
+		add hl, de
+		ld sp, hl
+
+		cp 7
+		jr c, l_sprite_erase_w_zeros_between_2_and_6_bytes
+
+		exx
+		ld de, (_sprgbl_incr_v_ptr_disp)
+		exx
+		sra a
+		jr l_sprite_erase_w_zeros_7_or_more_bytes
+
+	l_sprite_erase_w_zeros_1_byte:
+		ld de, 32
+		xor a
+
+	l_sprite_erase_w_zeros_1_byte_loop:
+		ld (hl), a
+		add hl, de
+		djnz l_sprite_erase_w_zeros_1_byte_loop
+
+		jr l_sprite_erase_w_zeros_end
+
+	l_sprite_erase_w_zeros_between_2_and_6_bytes:
+		ld hl, (_sprgbl_incr_v_ptr_disp)
+		ld c, l
+		ld de, 0
+		cp 2
+		jr z, l_sprite_erase_w_zeros_2_bytes
+		cp 3
+		jr z, l_sprite_erase_w_zeros_3_bytes
+		cp 4
+		jr z, l_sprite_erase_w_zeros_4_bytes
+		cp 5
+		jr z, l_sprite_erase_w_zeros_5_bytes
+		jr l_sprite_erase_w_zeros_6_bytes
+		
+	l_sprite_erase_w_zeros_2_bytes:
+		ld a, h
+	l_sprite_erase_w_zeros_2_bytes_loop:
+		push de
+		ld h, a
+		ld l, c
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_erase_w_zeros_2_bytes_loop
+
+		jr l_sprite_erase_w_zeros_end
+
+	l_sprite_erase_w_zeros_3_bytes:
+		ld a, h
+	l_sprite_erase_w_zeros_3_bytes_loop:
+		push de
+		inc sp
+		push de
+		ld h, a
+		ld l, c
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_erase_w_zeros_3_bytes_loop
+
+		jr l_sprite_erase_w_zeros_end
+
+	l_sprite_erase_w_zeros_4_bytes:
+		ld a, h
+	l_sprite_erase_w_zeros_4_bytes_loop:
+		push de
+		push de
+		ld h, a
+		ld l, c
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_erase_w_zeros_4_bytes_loop
+
+		jr l_sprite_erase_w_zeros_end
+		
+	l_sprite_erase_w_zeros_5_bytes:
+		ld a, h
+	l_sprite_erase_w_zeros_5_bytes_loop:
+		push de
+		push de
+		inc sp
+		push de
+		ld h, a
+		ld l, c
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_erase_w_zeros_5_bytes_loop
+
+		jr l_sprite_erase_w_zeros_end
+
+	l_sprite_erase_w_zeros_6_bytes:
+		ld a, h
+	l_sprite_erase_w_zeros_6_bytes_loop:
+		push de
+		push de
+		push de
+		ld h, a
+		ld l, c
+		add hl, sp
+		ld sp, hl
+		djnz l_sprite_erase_w_zeros_6_bytes_loop
+
+		jr l_sprite_erase_w_zeros_end
+
+	l_sprite_erase_w_zeros_7_or_more_bytes:
+		ld hl, l_address_pushes_erase_w_zeros_7_or_more_bytes + 16
+		ld e, a
+		ld d, 0
+		ex af, af
+		and a
+		sbc hl, de
+		ld e, 0
+
+	l_sprite_erase_w_zeros_7_or_more_bytes_loop:
+		jp (hl)
+	l_address_pushes_erase_w_zeros_7_or_more_bytes:
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		push de
+		ex af, af
+		jr nc, l_address_pushes_erase_w_zeros_7_or_more_bytes_even
+		inc sp
+		push de
+	l_address_pushes_erase_w_zeros_7_or_more_bytes_even:
+		ex af,af
+		exx
+		ld h, d
+		ld l, e
+		add hl, sp
+		ld sp, hl
+		exx
+		djnz l_sprite_erase_w_zeros_7_or_more_bytes_loop
+
+	l_sprite_erase_w_zeros_end:
 
 		ld sp, (_guarda_sp)
 		ei

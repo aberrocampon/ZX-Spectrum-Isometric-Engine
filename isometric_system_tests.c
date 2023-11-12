@@ -34,9 +34,9 @@ t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_ob
 
 	p_isometric_obj->graphic_type_index = graphic_type_index;
 
-	p_isometric_obj->physics.box3d.pos_x = p_init_pos->x;
-	p_isometric_obj->physics.box3d.pos_y = p_init_pos->y;
-	p_isometric_obj->physics.box3d.pos_z = p_init_pos->z;
+	p_isometric_obj->physics.box3d.pos_x = p_isometric_obj->physics.last_pos_x = p_init_pos->x;
+	p_isometric_obj->physics.box3d.pos_y = p_isometric_obj->physics.last_pos_y = p_init_pos->y;
+	p_isometric_obj->physics.box3d.pos_z = p_isometric_obj->physics.last_pos_z = p_init_pos->z;
 	p_isometric_obj->physics.box3d.width_x = p_isometric_obj_def->size.x;
 	p_isometric_obj->physics.box3d.width_y = p_isometric_obj_def->size.y;
 	p_isometric_obj->physics.box3d.height = p_isometric_obj_def->size.z;
@@ -47,7 +47,7 @@ t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_ob
 	p_isometric_obj->physics.gravity_count = 1;
 	p_isometric_obj->physics.flags = init_flags; // Flags de propiedades dinamicas del objeto aplicado al motor de fisicas
 
-	p = &(p_isometric_obj->behavior_variables);
+	p = (byte *)&(p_isometric_obj->behavior_variables);
 	for(i = 0; i < sizeof(p_isometric_obj->behavior_variables); i++)
 	{
 		*p++ = 0;
@@ -127,51 +127,105 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 	n_ordered_isometric_objects++;
 }
 
-void isometric_step(void)
-{
-	byte i;
-	t_isometric_obj **pp_isometric_obj, *p_isometric_obj;
+t_isometric_obj **isogbl_pp_isometric_obj, *isogbl_p_isometric_obj;
+byte sprgbl_i, sprgbl_j;
+t_sprite *sprgbl_psprite1, *sprgbl_psprite2;
+byte sprgbl_x1, sprgbl_x2, sprgbl_x3, sprgbl_x4;
+byte sprgbl_y1, sprgbl_y2, sprgbl_y3, sprgbl_y4;
 
+void isometric_step(void)
+{	
 	phys_box3d_step();
 
-	for(i = 0, pp_isometric_obj = isometric_objects_table; i < n_isometric_objects; i++, pp_isometric_obj++)
+	for(sprgbl_i = 0, isogbl_pp_isometric_obj = isometric_objects_table; sprgbl_i < n_isometric_objects; sprgbl_i++, isogbl_pp_isometric_obj++)
 	{
-		p_isometric_obj = *pp_isometric_obj;
+		isogbl_p_isometric_obj = *isogbl_pp_isometric_obj;
 
-		if(p_isometric_obj->behavior)
+		if(isogbl_p_isometric_obj->behavior)
 		{
-			(p_isometric_obj->behavior)(pp_isometric_obj);
+			(isogbl_p_isometric_obj->behavior)(isogbl_pp_isometric_obj);
 		}
 	}
 
 	isometric_reset_objects_ordering();
-	for(i = 0, pp_isometric_obj = isometric_objects_table; i < n_isometric_objects; i++, pp_isometric_obj++)
+	for(sprgbl_i = 0, isogbl_pp_isometric_obj = isometric_objects_table; sprgbl_i < n_isometric_objects; sprgbl_i++, isogbl_pp_isometric_obj++)
 	{
-		p_isometric_obj = *pp_isometric_obj;
+		isogbl_p_isometric_obj = *isogbl_pp_isometric_obj;
 
-		if(p_isometric_obj->sprite.actual_frame)
+		if(isogbl_p_isometric_obj->sprite.actual_frame)
 		{
-			sprite_restore_vdisplay(&(p_isometric_obj->sprite));
-			isometric_add_object_to_order(p_isometric_obj);
-			isometric_proj_obj(p_isometric_obj);
+			if((isogbl_p_isometric_obj->physics.box3d.pos_x != isogbl_p_isometric_obj->physics.last_pos_x) || 
+				(isogbl_p_isometric_obj->physics.box3d.pos_y != isogbl_p_isometric_obj->physics.last_pos_y) || (isogbl_p_isometric_obj->physics.box3d.pos_z != isogbl_p_isometric_obj->physics.last_pos_z))
+			{
+				isogbl_p_isometric_obj->sprite.moved_or_changed = 1;
+				isogbl_p_isometric_obj->physics.last_pos_x = isogbl_p_isometric_obj->physics.box3d.pos_x;
+				isogbl_p_isometric_obj->physics.last_pos_y = isogbl_p_isometric_obj->physics.box3d.pos_y;
+				isogbl_p_isometric_obj->physics.last_pos_z = isogbl_p_isometric_obj->physics.box3d.pos_z;
+			}
+			////sprite_restore_vdisplay(&(isogbl_p_isometric_obj->sprite));
+			sprite_erase_with_zeros(&(isogbl_p_isometric_obj->sprite));
+			isometric_add_object_to_order(isogbl_p_isometric_obj);
+			isometric_proj_obj(isogbl_p_isometric_obj);
 		}
 	}
 
-	for(i = 0; i < n_ordered_isometric_objects; i++)
+	for(sprgbl_i = 0; sprgbl_i < n_ordered_isometric_objects; sprgbl_i++)
 	{
-		if(ordered_isometric_objects_table[i]->sprite.actual_frame)
+		sprgbl_psprite1 = &(ordered_isometric_objects_table[sprgbl_i]->sprite);
+		if((sprgbl_psprite1->actual_frame) && !(sprgbl_psprite1->moved_or_changed))
 		{
-			sprite_draw(&(ordered_isometric_objects_table[i]->sprite));
+			sprgbl_x1 = sprgbl_psprite1->pos_x;
+			sprgbl_x2 = sprgbl_psprite1->pos_x + sprgbl_psprite1->width_px - 1;
+			sprgbl_y1 = sprgbl_psprite1->pos_y;
+			sprgbl_y2 = sprgbl_psprite1->pos_y + sprgbl_psprite1->height - 1;
+			for(sprgbl_j = 0; sprgbl_j < n_ordered_isometric_objects; sprgbl_j++)
+			{
+				if(sprgbl_i == sprgbl_j) continue;				
+				sprgbl_psprite2 = &(ordered_isometric_objects_table[sprgbl_j]->sprite);
+				if(!(sprgbl_psprite2->actual_frame)) continue;
+				if((sprgbl_i < sprgbl_j) && (sprgbl_psprite2->redraw_not_moved))
+				{
+					sprgbl_x3 = sprgbl_psprite2->pos_x;
+					sprgbl_x4 = sprgbl_psprite2->pos_x + sprgbl_psprite1->width_px - 1;
+					sprgbl_y3 = sprgbl_psprite2->pos_y;
+					sprgbl_y4 = sprgbl_psprite2->pos_y + sprgbl_psprite2->height - 1;
+					if(!((sprgbl_x4 < sprgbl_x1) || (sprgbl_x3 > sprgbl_x2) || (sprgbl_y4 < sprgbl_y1) || (sprgbl_y3 > sprgbl_y2)))
+					{
+						sprgbl_psprite1->redraw_not_moved = 1;
+						break;
+					}
+				}
+				if(sprgbl_psprite2->moved_or_changed)
+				{
+					sprgbl_x3 = (sprgbl_psprite2->last_x) & 0xf8;
+					sprgbl_x4 = (sprgbl_psprite2->last_x + sprgbl_psprite1->width_px - 1) | 7;
+					sprgbl_y3 = sprgbl_psprite2->last_y;
+					sprgbl_y4 = sprgbl_psprite2->last_y + sprgbl_psprite2->height - 1;
+					if(!((sprgbl_x4 < sprgbl_x1) || (sprgbl_x3 > sprgbl_x2) || (sprgbl_y4 < sprgbl_y1) || (sprgbl_y3 > sprgbl_y2)))
+					{
+						sprgbl_psprite1->redraw_not_moved = 1;
+						break;
+					}
+				}
+			}
 		}
 	}
 
-	for(i = 0, pp_isometric_obj = isometric_objects_table; i < n_isometric_objects; i++, pp_isometric_obj++)
+	for(sprgbl_i = 0; sprgbl_i < n_ordered_isometric_objects; sprgbl_i++)
 	{
-		p_isometric_obj = *pp_isometric_obj;
-
-		if(p_isometric_obj->sprite.actual_frame)
+		if(ordered_isometric_objects_table[sprgbl_i]->sprite.actual_frame)
 		{
-			sprite_update_display(&(p_isometric_obj->sprite));
+			sprite_draw(&(ordered_isometric_objects_table[sprgbl_i]->sprite));
+		}
+	}
+
+	for(sprgbl_i = 0, isogbl_pp_isometric_obj = isometric_objects_table; sprgbl_i < n_isometric_objects; sprgbl_i++, isogbl_pp_isometric_obj++)
+	{
+		isogbl_p_isometric_obj = *isogbl_pp_isometric_obj;
+
+		if(isogbl_p_isometric_obj->sprite.actual_frame)
+		{
+			sprite_update_display(&(isogbl_p_isometric_obj->sprite));
 		}
 	}
 }
