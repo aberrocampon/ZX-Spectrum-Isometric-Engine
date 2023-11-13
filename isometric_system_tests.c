@@ -105,7 +105,7 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 
 	if(n_ordered_isometric_objects >= N_MAX_ORDERED_ISOMETRIC_OBJECTS) return;
 
-	height = p_isometric_obj->physics.box3d.pos_x + p_isometric_obj->physics.box3d.pos_y + p_isometric_obj->physics.box3d.pos_z + p_isometric_obj->physics.box3d.pos_z;
+	height = p_isometric_obj->physics.box3d.pos_x + p_isometric_obj->physics.box3d.pos_y + ((p_isometric_obj->physics.box3d.pos_z)>>1) ;//+ p_isometric_obj->physics.box3d.pos_z;
 
 	for(i = (n_ordered_isometric_objects - 1); i >= 0; i--)
 	{
@@ -128,7 +128,7 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 }
 
 t_isometric_obj **isogbl_pp_isometric_obj, *isogbl_p_isometric_obj;
-byte sprgbl_i, sprgbl_j;
+int8 sprgbl_i, sprgbl_j;
 t_sprite *sprgbl_psprite1, *sprgbl_psprite2;
 byte sprgbl_x1, sprgbl_x2, sprgbl_x3, sprgbl_x4;
 byte sprgbl_y1, sprgbl_y2, sprgbl_y3, sprgbl_y4;
@@ -183,10 +183,10 @@ void isometric_step(void)
 				if(sprgbl_i == sprgbl_j) continue;				
 				sprgbl_psprite2 = &(ordered_isometric_objects_table[sprgbl_j]->sprite);
 				if(!(sprgbl_psprite2->actual_frame)) continue;
-				if((sprgbl_i < sprgbl_j) && (sprgbl_psprite2->redraw_not_moved))
+				if((sprgbl_i > sprgbl_j) && (sprgbl_psprite2->redraw_not_moved))
 				{
 					sprgbl_x3 = sprgbl_psprite2->pos_x;
-					sprgbl_x4 = sprgbl_psprite2->pos_x + sprgbl_psprite1->width_px - 1;
+					sprgbl_x4 = sprgbl_psprite2->pos_x + sprgbl_psprite2->width_px - 1;
 					sprgbl_y3 = sprgbl_psprite2->pos_y;
 					sprgbl_y4 = sprgbl_psprite2->pos_y + sprgbl_psprite2->height - 1;
 					if(!((sprgbl_x4 < sprgbl_x1) || (sprgbl_x3 > sprgbl_x2) || (sprgbl_y4 < sprgbl_y1) || (sprgbl_y3 > sprgbl_y2)))
@@ -198,7 +198,7 @@ void isometric_step(void)
 				if(sprgbl_psprite2->moved_or_changed)
 				{
 					sprgbl_x3 = (sprgbl_psprite2->last_x) & 0xf8;
-					sprgbl_x4 = (sprgbl_psprite2->last_x + sprgbl_psprite1->width_px - 1) | 7;
+					sprgbl_x4 = (sprgbl_psprite2->last_x + sprgbl_psprite2->width_px - 1) | 7;
 					sprgbl_y3 = sprgbl_psprite2->last_y;
 					sprgbl_y4 = sprgbl_psprite2->last_y + sprgbl_psprite2->height - 1;
 					if(!((sprgbl_x4 < sprgbl_x1) || (sprgbl_x3 > sprgbl_x2) || (sprgbl_y4 < sprgbl_y1) || (sprgbl_y3 > sprgbl_y2)))
