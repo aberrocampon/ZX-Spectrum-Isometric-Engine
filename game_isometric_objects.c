@@ -843,5 +843,17 @@ t_isometric_obj_graphic_def game_isometric_objects_table[] =
 	{
 		{ 4, 2, 15},
 		&game_spr_graph_def_stone_gate_right
-	}
+	},
+	{
+		{ 16, 0, 40},
+		&game_spr_graph_def_stone_corner_nw
+	},
+	{
+		{ 16, 0, 40},
+		&game_spr_graph_def_stone_corner_ne_1
+	},
+	{
+		{ 16, 0, 40},
+		&game_spr_graph_def_stone_corner_ne_2
+	},
 };

@@ -36,6 +36,44 @@ t_isometric_object_def player_isometric_objects[] =
     }
 };
 
+// Sobreimpresion para las paredes de la habitacion, representan el fondo grafico tras los demas objetos que se mueven delante
+byte n_stone_wall_objects = 4;
+t_isometric_object_def stone_wall_isometric_objects[] =
+{
+    {
+        GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NW,
+        { PHYS_BOX3D_MAX_X_3D_DEFFAULT, 0, 0 },
+        0,
+        0,
+        NULL,
+        0
+    },
+    {
+        GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NW,
+        { 0, PHYS_BOX3D_MAX_Y_3D_DEFFAULT, 0 },
+        0,
+        0,
+        NULL,
+        0
+    },
+    {
+        GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_1,
+        { 0, 0, 0 },
+        0,
+        0,
+        NULL,
+        0
+    },
+    {
+        GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_2,
+        { 0, 1, 0 },
+        0,
+        0,
+        NULL,
+        0
+    }
+};
+
 t_isometric_object_def game_room_0_isometric_objects[] =
 {
     {
@@ -175,45 +213,27 @@ t_game_map_room game_map_rooms_table[] =
 byte game_map_next_room;
 byte game_map_actual_room;
 
-void game_map_init_background()
+void game_map_enter_room(void)
 {
-    t_sprite sprite;
-
+    sprite_clear_display();
     sprite_clear_vdisplay();
     sprite_set_attrib(7);
     sprite_set_border(0);
 
-    sprite_set_graphic_def(&sprite, &game_spr_graph_def_stone_corner_nw);
-    sprite.pos_x_ref = ISOMETRIC_ORIGEN_PROJ_X_DEFFAULT - PHYS_BOX3D_MAX_X_3D_DEFFAULT;
-    sprite.pos_y_ref = ISOMETRIC_ORIGEN_PROJ_Y_DEFFAULT + (PHYS_BOX3D_MAX_X_3D_DEFFAULT >> 1);
-    sprite_draw(&sprite);
+    isometric_reset_table(n_stone_wall_objects);
+    isometric_reset_objects_ordering(0);
 
-    sprite.required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
-    sprite.pos_x_ref = ISOMETRIC_ORIGEN_PROJ_X_DEFFAULT + PHYS_BOX3D_MAX_Y_3D_DEFFAULT;
-    sprite.pos_y_ref = ISOMETRIC_ORIGEN_PROJ_Y_DEFFAULT + (PHYS_BOX3D_MAX_Y_3D_DEFFAULT >> 1);
-    sprite_draw(&sprite);
+    //background (walls)
+    isometric_create_and_add_objects_to_table(n_stone_wall_objects, stone_wall_isometric_objects, game_isometric_objects_table);
+    sprite_set_required_graphic_state(&(isometric_objects_table[1]->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_LEFT);
 
-    sprite_set_graphic_def(&sprite, &game_spr_graph_def_stone_corner_ne_1);
-    sprite.pos_x_ref = ISOMETRIC_ORIGEN_PROJ_X_DEFFAULT;
-    sprite.pos_y_ref = ISOMETRIC_ORIGEN_PROJ_Y_DEFFAULT;
-    sprite_draw(&sprite);
-
-    sprite_set_graphic_def(&sprite, &game_spr_graph_def_stone_corner_ne_2);
-    sprite.pos_x_ref = ISOMETRIC_ORIGEN_PROJ_X_DEFFAULT + 1;
-    sprite.pos_y_ref = ISOMETRIC_ORIGEN_PROJ_Y_DEFFAULT;
-    sprite_draw(&sprite);
-}
-
-void game_map_enter_room(void)
-{
-    isometric_reset_table();
+    // room objects
     isometric_create_and_add_objects_to_table(game_map_rooms_table[game_map_next_room].n_isometric_objects, game_map_rooms_table[game_map_next_room].p_game_map_room_isometric_objects, game_isometric_objects_table);
-    isometric_create_and_add_objects_to_table(n_player_objects, player_isometric_objects, game_isometric_objects_table);
-    game_map_actual_room = game_map_next_room;
 
-    game_map_init_background();
-    sprite_transfer_vdisplay_2_background_vdisplay();
-    sprite_transfer_vdisplay_2_phys_display();
+    // player
+    isometric_create_and_add_objects_to_table(n_player_objects, player_isometric_objects, game_isometric_objects_table);
+
+    game_map_actual_room = game_map_next_room;
 }
 
 void game_map_step(void)

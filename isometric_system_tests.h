@@ -68,14 +68,16 @@ extern byte isometric_origen_proj_y;
 
 extern t_isometric_obj *isometric_objects_table[];
 extern byte n_isometric_objects;
+extern byte n_bakckground_isometric_objects;
 extern byte n_created_isometric_objects;
+extern byte n_ordered_isometric_objects;
 
-#define isometric_reset_table() \
+#define isometric_reset_table(n) \
 							{ \
-								n_created_isometric_objects = 0; n_isometric_objects = 0; \
-								pp_phys_box3d_objects_table = (t_physics_box3d **)isometric_objects_table; p_n_phys_box3d_objects = &n_isometric_objects; \
+								n_created_isometric_objects = n_isometric_objects = 0; n_bakckground_isometric_objects = (n); \
+								pp_phys_box3d_objects_table = (t_physics_box3d **)isometric_objects_table + (n); n_phys_box3d_objects = 0; \
 							}
-#define isometric_reset_objects_ordering() {n_ordered_isometric_objects = 0;}
+#define isometric_reset_objects_ordering(n) {n_ordered_isometric_objects = (n);}
 
 void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj);
 t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_obj_graphic_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter);

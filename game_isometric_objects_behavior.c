@@ -25,13 +25,13 @@ void orient_guardian(byte new_orientation)
 
 	if((new_orientation == ISOMETRIC_ORIENTATION_N) || (new_orientation == ISOMETRIC_ORIENTATION_W))
 	{
-		p_isometric_subobj_1->sprite.required_graphic_state = (p_isometric_subobj_1->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
-		p_isometric_subobj_2->sprite.required_graphic_state = (p_isometric_subobj_2->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_LEFT;
+		sprite_set_required_graphic_state(&(p_isometric_subobj_1->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_LEFT);
+		sprite_set_required_graphic_state(&(p_isometric_subobj_2->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_LEFT);
 	}
 	else
 	{
-		p_isometric_subobj_1->sprite.required_graphic_state = (p_isometric_subobj_1->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
-		p_isometric_subobj_2->sprite.required_graphic_state = (p_isometric_subobj_2->sprite.required_graphic_state & (~SPRITE_GRAPHIC_STATE_MASK_FLIPPED_H)) | SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+		sprite_set_required_graphic_state(&(p_isometric_subobj_1->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT);
+		sprite_set_required_graphic_state(&(p_isometric_subobj_2->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT);
 	}
 }
 
@@ -42,6 +42,16 @@ void behavior_player_set_pointers(t_isometric_obj **pp_isometric_obj_player)
 	p_isometric_subobj_2 = pp_isometric_obj_player[2];
 }
 
+void behavior_player_update_subobject_positions(t_isometric_obj *p_isometric_subobj, byte pos_x, byte pos_y, byte pos_z)
+{
+	p_isometric_subobj->physics.last_pos_x = p_isometric_subobj->physics.box3d.pos_x;
+	p_isometric_subobj->physics.last_pos_y = p_isometric_subobj->physics.box3d.pos_y;
+	p_isometric_subobj->physics.last_pos_z = p_isometric_subobj->physics.box3d.pos_z;
+	p_isometric_subobj->physics.box3d.pos_x = pos_x;
+	p_isometric_subobj->physics.box3d.pos_y = pos_y;
+	p_isometric_subobj->physics.box3d.pos_z = pos_z;
+}
+
 #define DELTA_SPEED_PLAYER (1)
 
 void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
@@ -49,13 +59,8 @@ void behavior_controller_player(t_isometric_obj **pp_isometric_obj_player)
 	behavior_player_set_pointers(pp_isometric_obj_player);
 
 	// asignar posicion de pies y tronco
-	p_isometric_subobj_1->physics.box3d.pos_x = pp_isometric_obj_player[0]->physics.box3d.pos_x;
-	p_isometric_subobj_1->physics.box3d.pos_y = pp_isometric_obj_player[0]->physics.box3d.pos_y;
-	p_isometric_subobj_1->physics.box3d.pos_z = pp_isometric_obj_player[0]->physics.box3d.pos_z + (13 - 10);
-
-	p_isometric_subobj_2->physics.box3d.pos_x = pp_isometric_obj_player[0]->physics.box3d.pos_x;
-	p_isometric_subobj_2->physics.box3d.pos_y = pp_isometric_obj_player[0]->physics.box3d.pos_y;
-	p_isometric_subobj_2->physics.box3d.pos_z = pp_isometric_obj_player[0]->physics.box3d.pos_z - (13 - 3);
+	behavior_player_update_subobject_positions(p_isometric_subobj_1, pp_isometric_obj_player[0]->physics.box3d.pos_x, pp_isometric_obj_player[0]->physics.box3d.pos_y, pp_isometric_obj_player[0]->physics.box3d.pos_z + (13 - 10));
+	behavior_player_update_subobject_positions(p_isometric_subobj_2, pp_isometric_obj_player[0]->physics.box3d.pos_x, pp_isometric_obj_player[0]->physics.box3d.pos_y, pp_isometric_obj_player[0]->physics.box3d.pos_z - (13 - 3));
 
     nframes++;
 

@@ -63,7 +63,7 @@ extern t_physics_box3d phys_box3d_wall_e;
 extern t_physics_box3d phys_box3d_wall_w;
 
 extern t_physics_box3d **pp_phys_box3d_objects_table;
-extern byte *p_n_phys_box3d_objects;
+extern byte n_phys_box3d_objects;
 
 void phys_box3d_step(void);
 

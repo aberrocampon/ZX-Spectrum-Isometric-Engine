@@ -40,21 +40,25 @@ typedef struct
 } t_sprite_graphic_def;
 
 void sprite_init(void);
-void sprite_init_background(void);
+//void sprite_init_background(void);
 void sprite_set_border(byte border);
+void sprite_clear_display(void);
 void sprite_clear_vdisplay(void);
 void sprite_set_attrib(byte attrib);
 
 void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef);
 void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address);
 void sprite_next_frame(t_sprite *psprite);
+void sprite_set_required_graphic_state(t_sprite *psprite, byte required_graphic_state);
 
 void sprite_draw(t_sprite *psprite);
 void sprite_update_display(t_sprite *psprite);
+/*
 void sprite_restore_vdisplay(t_sprite *psprite);
 void sprite_transfer_vdisplay_2_phys_display(void);
 void sprite_transfer_vdisplay_2_background_vdisplay(void);
 void sprite_transfer_and_restore_vdisplay(void);
+*/
 void sprite_erase_with_zeros(t_sprite *psprite);
 
 #endif

@@ -67,7 +67,7 @@ t_physics_box3d phys_box3d_wall_w =
 };
 
 t_physics_box3d **pp_phys_box3d_objects_table;
-byte *p_n_phys_box3d_objects;
+byte n_phys_box3d_objects;
 
 byte predivisor_friction = 0;
 
@@ -609,15 +609,12 @@ void phys_box3d_step_subfunction(void)
     }
 }
 
-byte n_phys_box3d_objects;
 byte i, j, k;
-byte coord1, coord2;
 int8 delta_speed_x2, delta_speed;
 t_physics_box3d **pp_phys_obj, *p_phys_obj,**pp_phys_another_obj, *p_phys_another_obj;
 
 void phys_box3d_step(void)
 {
-    n_phys_box3d_objects = *p_n_phys_box3d_objects;
     ++predivisor_friction;
 
     // step de la aceletacion de la gravedad
@@ -781,9 +778,20 @@ void phys_box3d_step(void)
         p_phys_obj = *pp_phys_obj;
         if(!(p_phys_obj->enabled)) continue; // tiene el objeto deshabilitado su modelo fisico ?
 
-        p_phys_obj->box3d.pos_x += p_phys_obj->speed_x;
-        p_phys_obj->box3d.pos_y += p_phys_obj->speed_y;
-        p_phys_obj->box3d.pos_z += p_phys_obj->speed_z;
+        coord1 = p_phys_obj->box3d.pos_x;
+        p_phys_obj->last_pos_x = coord1;
+        coord1 += p_phys_obj->speed_x;
+        p_phys_obj->box3d.pos_x = coord1;
+
+        coord1 = p_phys_obj->box3d.pos_y;
+        p_phys_obj->last_pos_y = coord1;
+        coord1 += p_phys_obj->speed_y;
+        p_phys_obj->box3d.pos_y = coord1;
+
+        coord1 = p_phys_obj->box3d.pos_z;
+        p_phys_obj->last_pos_z = coord1;
+        coord1 += p_phys_obj->speed_z;
+        p_phys_obj->box3d.pos_z = coord1;
 
         if(p_phys_obj->box3d.pos_x < p_phys_obj->box3d.width_x)
         {

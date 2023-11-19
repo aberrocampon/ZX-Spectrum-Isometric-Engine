@@ -46,10 +46,8 @@ extern t_isometric_obj_graphic_def game_isometric_objects_table[];
 #define GAME_ISOMETRIC_OBJ_TYPE_GATE_DINTEL_E_W (8)
 #define GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_LEFT_E_W (9)
 #define GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_RIGHT_E_W (10)
-
-// Sprites para el fondo, es decir paredes de las habitaciones
-extern t_sprite_graphic_def game_spr_graph_def_stone_corner_nw;
-extern t_sprite_graphic_def game_spr_graph_def_stone_corner_ne_1;
-extern t_sprite_graphic_def game_spr_graph_def_stone_corner_ne_2;
+#define GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NW (11)
+#define GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_1 (12)
+#define GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_2 (13)
 
 #endif
