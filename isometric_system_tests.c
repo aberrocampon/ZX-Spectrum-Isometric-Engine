@@ -15,16 +15,19 @@ int height_over_proj_plane[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 t_isometric_obj *ordered_isometric_objects_table[N_MAX_ORDERED_ISOMETRIC_OBJECTS];
 byte n_ordered_isometric_objects = 0;
 
+t_isometric_obj *isogbl_p_isometric_obj;
+
 void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj)
 {
 	if(n_isometric_objects >= N_MAX_ISOMETRIC_OBJECTS) return;
 
     // Añade a la tabla de objetos fisicos
-    isometric_objects_table[n_isometric_objects++] = p_isometric_obj;
-	isometric_proj_obj(p_isometric_obj);
+	isogbl_p_isometric_obj = p_isometric_obj;
+    isometric_objects_table[n_isometric_objects++] = isogbl_p_isometric_obj;
+	isometric_proj_obj();
 	if(n_isometric_objects <= n_bakckground_isometric_objects)
 	{
-		isometric_add_object_to_order(p_isometric_obj);
+		isometric_add_object_to_order();
 	}
 	else
 	{
@@ -94,20 +97,20 @@ void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_i
 	}
 }
 
-void isometric_proj_obj(t_isometric_obj *p_isometric_obj)
+void isometric_proj_obj(void)
 {
-	p_isometric_obj->sprite.pos_x_ref = 
+	isogbl_p_isometric_obj->sprite.pos_x_ref = 
 				isometric_origen_proj_x -
-				p_isometric_obj->physics.box3d.pos_x + 
-				p_isometric_obj->physics.box3d.pos_y;
-	p_isometric_obj->sprite.pos_y_ref = 
+				isogbl_p_isometric_obj->physics.box3d.pos_x + 
+				isogbl_p_isometric_obj->physics.box3d.pos_y;
+	isogbl_p_isometric_obj->sprite.pos_y_ref = 
 				isometric_origen_proj_y +
-				((p_isometric_obj->physics.box3d.pos_x)>>1) + 
-				((p_isometric_obj->physics.box3d.pos_y)>>1) -
-				p_isometric_obj->physics.box3d.pos_z;
+				((isogbl_p_isometric_obj->physics.box3d.pos_x)>>1) + 
+				((isogbl_p_isometric_obj->physics.box3d.pos_y)>>1) -
+				isogbl_p_isometric_obj->physics.box3d.pos_z;
 }
 
-void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
+void isometric_add_object_to_order(void)
 {
 	int i;
 	int ordered_index;
@@ -115,7 +118,7 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 
 	if(n_ordered_isometric_objects >= N_MAX_ORDERED_ISOMETRIC_OBJECTS) return;
 
-	height = p_isometric_obj->physics.box3d.pos_x + p_isometric_obj->physics.box3d.pos_y + ((p_isometric_obj->physics.box3d.pos_z)>>1) ;//+ p_isometric_obj->physics.box3d.pos_z;
+	height = isogbl_p_isometric_obj->physics.box3d.pos_x + isogbl_p_isometric_obj->physics.box3d.pos_y + ((isogbl_p_isometric_obj->physics.box3d.pos_z)>>1) ;//+ p_isometric_obj->physics.box3d.pos_z;
 
 	for(i = (n_ordered_isometric_objects - 1); i >= n_bakckground_isometric_objects; i--)
 	{
@@ -131,13 +134,13 @@ void isometric_add_object_to_order(t_isometric_obj *p_isometric_obj)
 		ordered_isometric_objects_table[i] = ordered_isometric_objects_table[i - 1];
 	}
 
-	ordered_isometric_objects_table[ordered_index] = p_isometric_obj;
+	ordered_isometric_objects_table[ordered_index] = isogbl_p_isometric_obj;
 	height_over_proj_plane[ordered_index] = height;
 
 	n_ordered_isometric_objects++;
 }
 
-t_isometric_obj **isogbl_pp_isometric_obj, **isogbl_pp_isometric_obj2, *isogbl_p_isometric_obj;
+t_isometric_obj **isogbl_pp_isometric_obj, **isogbl_pp_isometric_obj2;
 int8 isogbl_i, isogbl_j;
 t_sprite *isogbl_psprite1, *isogbl_psprite2;
 byte isogbl_x1, isogbl_x2;
@@ -170,7 +173,7 @@ void isometric_step(void)
 				(isogbl_p_isometric_obj->physics.box3d.pos_y != isogbl_p_isometric_obj->physics.last_pos_y) || (isogbl_p_isometric_obj->physics.box3d.pos_z != isogbl_p_isometric_obj->physics.last_pos_z))
 			{
 				isogbl_p_isometric_obj->sprite.moved_or_changed = 1;
-				isometric_proj_obj(isogbl_p_isometric_obj);
+				isometric_proj_obj();
 			}
 
 			if(isogbl_p_isometric_obj->sprite.moved_or_changed)
@@ -178,7 +181,7 @@ void isometric_step(void)
 				sprite_erase_with_zeros(&(isogbl_p_isometric_obj->sprite));
 			}
 			
-			isometric_add_object_to_order(isogbl_p_isometric_obj);
+			isometric_add_object_to_order();
 		}
 	}
 
