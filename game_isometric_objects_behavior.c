@@ -238,10 +238,11 @@ void behavior_cinematic_updown(t_isometric_obj **pp_isometric_obj)
 
 }
 
-void behavior_gate_init(t_isometric_obj **pp_isometric_obj)
-{
-	p_isometric_obj = *pp_isometric_obj;
+// void behavior_gate_init(t_isometric_obj **pp_isometric_obj)
+// {
+// 	p_isometric_obj = *pp_isometric_obj;
 
-	p_isometric_obj->sprite.required_graphic_state = p_isometric_obj->bahavior_parameter;
-	p_isometric_obj->behavior = NULL;
-}
+// 	p_isometric_obj->sprite.required_graphic_state = p_isometric_obj->bahavior_parameter;
+// 	sprite_set_pos_from_posref(&(p_isometric_obj->sprite));
+// 	p_isometric_obj->behavior = NULL;
+// }

@@ -26,6 +26,11 @@ typedef struct
 	byte *first_frame;
 	byte *last_frame;
 	byte *actual_frame;
+	byte erase_rect_min_x;
+	byte erase_rect_max_x;
+	byte erase_rect_max_y;
+	byte not_moved_rect_max_x;
+	byte not_moved_rect_max_y;
 } t_sprite;
 
 // Imagen binaria y mascara en bytes alternos
@@ -46,11 +51,12 @@ void sprite_clear_display(void);
 void sprite_clear_vdisplay(void);
 void sprite_set_attrib(byte attrib);
 
-void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef);
+void sprite_set_graphic_def(t_sprite *psprite, byte initial_required_graphic_state, t_sprite_graphic_def *psprite_graphdef);
 void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte *last_frane_address);
 void sprite_next_frame(t_sprite *psprite);
 void sprite_set_required_graphic_state(t_sprite *psprite, byte required_graphic_state);
 
+void sprite_set_pos_from_posref(t_sprite *psprite);
 void sprite_draw(t_sprite *psprite);
 void sprite_update_display(t_sprite *psprite);
 /*

@@ -12,6 +12,7 @@ t_isometric_object_def player_isometric_objects[] =
 {
     {
         GAME_ISOMETRIC_OBJ_TYPE_GUARDIAN_BOX3D,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 0, 0, 0 },
         1,
         0,
@@ -20,6 +21,7 @@ t_isometric_object_def player_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_GUARDIAN_TRUNK,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 0, 0, 0 },
         0,
         0,
@@ -28,6 +30,7 @@ t_isometric_object_def player_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_HUMAN_FEET,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 0, 0, 0 },
         0,
         0,
@@ -42,6 +45,7 @@ t_isometric_object_def stone_wall_isometric_objects[] =
 {
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NW,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { PHYS_BOX3D_MAX_X_3D_DEFFAULT, 0, 0 },
         0,
         0,
@@ -50,6 +54,7 @@ t_isometric_object_def stone_wall_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NW,
+        SPRITE_GRAPHIC_STATE_FLIPPED_LEFT,
         { 0, PHYS_BOX3D_MAX_Y_3D_DEFFAULT, 0 },
         0,
         0,
@@ -58,6 +63,7 @@ t_isometric_object_def stone_wall_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_1,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 0, 0, 0 },
         0,
         0,
@@ -66,6 +72,7 @@ t_isometric_object_def stone_wall_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_WALL_BACKG_NE_2,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 0, 1, 0 },
         0,
         0,
@@ -78,6 +85,7 @@ t_isometric_object_def game_room_0_isometric_objects[] =
 {
     {
         GAME_ISOMETRIC_OBJ_TYPE_BLOCK,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 40, 50, 20 },
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
@@ -86,6 +94,7 @@ t_isometric_object_def game_room_0_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_BLOCK,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 70, 75, 40 },
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
@@ -94,6 +103,7 @@ t_isometric_object_def game_room_0_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_BLOCK,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 70, 30, 54 },
         1,
         0,
@@ -102,6 +112,7 @@ t_isometric_object_def game_room_0_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_BLOCK,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 50, 50, 35 },
         1,
         0,
@@ -110,6 +121,7 @@ t_isometric_object_def game_room_0_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_GATE_DINTEL_N_S,
+        0,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1), 4, 35 },
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
@@ -118,19 +130,21 @@ t_isometric_object_def game_room_0_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_LEFT_N_S,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1) + 14 - 2, 4,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT
+        NULL,
+        0
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_RIGHT_N_S,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1) - 14 + 2, 4,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT
+        NULL,
+        0
     }
 };
 
@@ -138,6 +152,7 @@ t_isometric_object_def game_room_1_isometric_objects[] =
 {
     {
         GAME_ISOMETRIC_OBJ_TYPE_GHOST,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { 50, 50, 35 },
         1,
         0,
@@ -146,6 +161,7 @@ t_isometric_object_def game_room_1_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_GATE_DINTEL_N_S,
+        0,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1), PHYS_BOX3D_MAX_Y_3D_DEFFAULT - 4, 35 },
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
@@ -154,23 +170,26 @@ t_isometric_object_def game_room_1_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_LEFT_N_S,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1) + 14 - 2, PHYS_BOX3D_MAX_Y_3D_DEFFAULT - 4,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT
+        NULL,
+        0
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_RIGHT_N_S,
+        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT,
         { (PHYS_BOX3D_MAX_X_3D_DEFFAULT>>1) - 14 + 2, PHYS_BOX3D_MAX_Y_3D_DEFFAULT - 4,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT
+        NULL,
+        0
     },
 
     {
         GAME_ISOMETRIC_OBJ_TYPE_GATE_DINTEL_E_W,
+        0,
         { 4, (PHYS_BOX3D_MAX_Y_3D_DEFFAULT>>1), 35 },
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
@@ -179,19 +198,21 @@ t_isometric_object_def game_room_1_isometric_objects[] =
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_LEFT_E_W,
+        SPRITE_GRAPHIC_STATE_FLIPPED_LEFT,
         { 4, (PHYS_BOX3D_MAX_Y_3D_DEFFAULT>>1) + 14 - 2,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_LEFT
+        NULL,
+        0
     },
     {
         GAME_ISOMETRIC_OBJ_TYPE_STONE_GATE_RIGHT_E_W,
+        SPRITE_GRAPHIC_STATE_FLIPPED_LEFT,
         { 4, (PHYS_BOX3D_MAX_Y_3D_DEFFAULT>>1) - 14 + 2,  15},
         1,
         PHYS_BOX3D_FLAG_CINEMATIC,
-        behavior_gate_init,
-        SPRITE_GRAPHIC_STATE_FLIPPED_LEFT
+        NULL,
+        0
     }
 };
 
@@ -226,6 +247,7 @@ void game_map_enter_room(void)
     //background (walls)
     isometric_create_and_add_objects_to_table(n_stone_wall_objects, stone_wall_isometric_objects, game_isometric_objects_table);
     sprite_set_required_graphic_state(&(isometric_objects_table[1]->sprite), SPRITE_GRAPHIC_STATE_FLIPPED_LEFT);
+    sprite_set_pos_from_posref(&(isometric_objects_table[1]->sprite));
 
     // room objects
     isometric_create_and_add_objects_to_table(game_map_rooms_table[game_map_next_room].n_isometric_objects, game_map_rooms_table[game_map_next_room].p_game_map_room_isometric_objects, game_isometric_objects_table);

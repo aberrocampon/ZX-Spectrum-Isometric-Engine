@@ -56,6 +56,7 @@ typedef struct
 typedef struct
 {
     byte graphic_type_index; // en realidad indice de una tabla de t_isometric_obj_graphic_def del juego
+	byte initial_required_graphic_state;
     t_b_vec3d init_pos;
     byte physics_enabled;
     byte init_flags;
@@ -80,7 +81,7 @@ extern byte n_ordered_isometric_objects;
 #define isometric_reset_objects_ordering(n) {n_ordered_isometric_objects = (n);}
 
 void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj);
-t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_obj_graphic_def *p_isometric_obj_def, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter);
+t_isometric_obj *isometric_create_object(byte graphic_type_index, t_isometric_obj_graphic_def *p_isometric_obj_def, byte initial_required_graphic_state, t_b_vec3d *p_init_pos, byte physics_enabled, byte init_flags, void (*behavior)(t_isometric_obj **), byte behavior_parameter);
 void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_isometric_object_def *isometric_objects_def_table, t_isometric_obj_graphic_def *isometric_obj_graphic_def_table);
 void isometric_step(void);
 void isometric_proj_obj(void);

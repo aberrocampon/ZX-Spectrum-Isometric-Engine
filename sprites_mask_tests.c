@@ -129,11 +129,11 @@ void sprite_init(void)
 	precalculate_shift_tables();
 }
 
-void sprite_set_graphic_def(t_sprite *psprite, t_sprite_graphic_def *psprite_graphdef)
+void sprite_set_graphic_def(t_sprite *psprite, byte initial_required_graphic_state, t_sprite_graphic_def *psprite_graphdef)
 {
 	if(psprite_graphdef)
 	{
-		psprite->required_graphic_state = SPRITE_GRAPHIC_STATE_FLIPPED_RIGHT;
+		psprite->required_graphic_state = initial_required_graphic_state;
 		psprite->width = psprite_graphdef->width;
 		psprite->height = psprite_graphdef->height;
 		psprite->width_px = precalculated_shift_tables[0xb00 + psprite->width]; // x 8
@@ -188,6 +188,21 @@ byte mask_start_array[] = {0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe};
 byte mask_end_array[] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x7, 0x03, 0x01};
 byte sprgbl_x0, sprgbl_x1, sprgbl_aux;
 t_sprite *sprgbl_psprite;
+
+void sprite_set_pos_from_posref(t_sprite *psprite)
+{
+	sprgbl_psprite = psprite;
+	sprgbl_p_gbd = sprgbl_psprite->actual_frame;
+	if(sprgbl_psprite->required_graphic_state != *sprgbl_p_gbd++)
+	{
+		sprgbl_psprite->pos_x = sprgbl_psprite->pos_x_ref + 1 - sprgbl_psprite->width_px - *sprgbl_p_gbd++;
+	}
+	else
+	{
+		sprgbl_psprite->pos_x = sprgbl_psprite->pos_x_ref + *sprgbl_p_gbd++;
+	}
+	sprgbl_psprite->pos_y = sprgbl_psprite->pos_y_ref + *sprgbl_p_gbd;
+}
 
 void sprite_flip_h(void)
 {
@@ -395,14 +410,15 @@ void sprite_draw(t_sprite *psprite)
 		// ajusta delta_x (desplazamiento del punto de referencia del sprite respecto a esquina superior izquierda)
 		sprgbl_p_gbd -= 2;
 		*sprgbl_p_gbd = 1 - sprgbl_psprite->width_px - *sprgbl_p_gbd;
+		sprgbl_p_gbd += 2;
 	}
 	else
 	{
-		sprgbl_p_gbd++;
+		sprgbl_p_gbd += 3;
 	}
 	// desplazar coordenadas de referencia en la pantalla a coordenadas de la esquina superior izquierda en donde se dibujara el sprite
-	sprgbl_psprite->pos_x = sprgbl_psprite->pos_x_ref + *sprgbl_p_gbd++;
-	sprgbl_psprite->pos_y = sprgbl_psprite->pos_y_ref + *sprgbl_p_gbd++;
+	//sprgbl_psprite->pos_x = sprgbl_psprite->pos_x_ref + *sprgbl_p_gbd++;
+	//sprgbl_psprite->pos_y = sprgbl_psprite->pos_y_ref + *sprgbl_p_gbd++;
 	/////////////////////////////////////////////////////////
 
 	sprgbl_p_vdisp = vdisplay_bin_buff + (((unsigned int)(sprgbl_psprite->pos_y))<<5) + (((unsigned int)(sprgbl_psprite->pos_x))>>3);
