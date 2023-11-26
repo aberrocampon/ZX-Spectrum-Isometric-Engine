@@ -17,6 +17,7 @@ byte n_ordered_isometric_objects = 0;
 
 t_isometric_obj *isogbl_p_isometric_obj;
 t_sprite *isogbl_psprite1, *isogbl_psprite2;
+t_sprite *isogbl_psprite3, *isogbl_psprite4;
 
 void isometric_add_object_to_table(t_isometric_obj *p_isometric_obj)
 {
@@ -103,6 +104,12 @@ void isometric_create_and_add_objects_to_table(byte n_isometric_objects_def, t_i
 	}
 }
 
+t_isometric_obj **isogbl_pp_isometric_obj, **isogbl_pp_isometric_obj2;
+int8 isogbl_i, isogbl_j;
+int8 isogbl_i_ordering;
+byte ordered_index;
+int height;
+
 void isometric_proj_obj(void)
 {
 	isogbl_p_isometric_obj->sprite.pos_x_ref = 
@@ -120,42 +127,139 @@ void isometric_proj_obj(void)
 
 void isometric_add_object_to_order(void)
 {
-	int i;
-	int ordered_index;
-	int height;
-
 	if(n_ordered_isometric_objects >= N_MAX_ORDERED_ISOMETRIC_OBJECTS) return;
 
 	height = isogbl_p_isometric_obj->physics.box3d.pos_x + isogbl_p_isometric_obj->physics.box3d.pos_y;
 	height -= ((height>>2) + (height>>3));
 	height += isogbl_p_isometric_obj->physics.box3d.pos_z;
+	#asm
+		ld hl, (_isogbl_p_isometric_obj)
+		ld a, (hl)
+		inc hl
+		add (hl)
+		ld e, a
+		ld a, 0
+		adc a, 0
+		ld d, a
+		push hl
+		ld h, 0xf4
+		ld l, e
+		ld a, (hl)
+		jr z, l_isometric_add_object_to_order_calculate_height_1
+		or 0x40
+		l_isometric_add_object_to_order_calculate_height_1:
+		ld l, a
+		ld h, 0xf2
+		add (hl)
+		ld l, a
+		ld h, 0
+		ex de, hl
+		sbc hl, de
+		ex de, hl
+		pop hl
+		inc hl
+		ld l, (hl)
+		ld h, 0
+		add hl, de
+		ld (_height), hl
+	#endasm
 
-	for(i = (n_ordered_isometric_objects - 1); i >= n_bakckground_isometric_objects; i--)
-	{
-		if(height_over_proj_plane[i] < height) break;
-	}
+	// for(isogbl_i_ordering = (n_ordered_isometric_objects - 1); isogbl_i_ordering >= n_bakckground_isometric_objects; isogbl_i_ordering--)
+	// {
+	// 	if(height_over_proj_plane[isogbl_i_ordering] < height) break;
+	// }
 
-	ordered_index = i + 1;
+	// ordered_index = isogbl_i_ordering + 1;
+	#asm
+		ld a, (_n_ordered_isometric_objects)
+		ld l, a
+		ld h, 0
+		dec l
+		add hl, hl
+		ld bc, _height_over_proj_plane
+		add hl, bc
+		inc hl
+		ex de, hl
+		ld hl, _n_bakckground_isometric_objects
+		sub (hl)
+		ld b, a
+		jr c, l_isometric_add_object_to_order_result_index
+		jr z, l_isometric_add_object_to_order_result_index
+		ld hl, (_height)
+		ex de, hl
+	l_isometric_add_object_to_order_loop:
+		ld a, d
+	l_isometric_add_object_to_order_loop2:
+		cp (hl)
+		jr z, l_isometric_add_object_to_order_compare_height_low_byte
+		jr nc, l_isometric_add_object_to_order_result_index
+		dec hl
+		dec hl
+		djnz l_isometric_add_object_to_order_loop2
+		jr l_isometric_add_object_to_order_result_index
+	l_isometric_add_object_to_order_loop_continue:
+		dec hl
+		djnz l_isometric_add_object_to_order_loop
+		jr l_isometric_add_object_to_order_result_index
+	l_isometric_add_object_to_order_compare_height_low_byte:
+		dec hl
+		ld a, e
+		cp (hl)
+		jr c, l_isometric_add_object_to_order_loop_continue
+		jr z, l_isometric_add_object_to_order_loop_continue
+	l_isometric_add_object_to_order_result_index:
+		ld a, (_n_bakckground_isometric_objects)
+		add b
+		ld (_ordered_index), a
+	#endasm
 
-	i = 0; // compiler bug !!!
-	for(i = n_ordered_isometric_objects; i > ordered_index; i--)
-	{
-		height_over_proj_plane[i] = height_over_proj_plane[i - 1];
-		ordered_isometric_objects_table[i] = ordered_isometric_objects_table[i - 1];
-	}
+	// isogbl_i_ordering = 0; // compiler bug !!!
+	// for(isogbl_i_ordering = n_ordered_isometric_objects; isogbl_i_ordering > ordered_index; isogbl_i_ordering--)
+	// {
+	// 	height_over_proj_plane[isogbl_i_ordering] = height_over_proj_plane[isogbl_i_ordering - 1];
+	// 	ordered_isometric_objects_table[isogbl_i_ordering] = ordered_isometric_objects_table[isogbl_i_ordering - 1];
+	// }
+	#asm
+		ld hl, (_n_ordered_isometric_objects)
+		ld h, 0
+		add hl, hl
+		ld d, h
+		ld e, l
+		;;ld a, (_ordered_index)
+		ld c, a
+		ld b, 0
+		sbc hl, bc
+		sbc hl, bc
+		jr z, l_isometric_add_object_to_order_not_to_move
+		ld b, h
+		ld c, l
+		push bc
+		inc de
+		push de
+		ld hl, _height_over_proj_plane
+		add hl, de
+		ld d, h
+		ld e, l
+		dec hl
+		dec hl
+		lddr
+		pop hl
+		ld de, _ordered_isometric_objects_table
+		add hl, de
+		ld d, h
+		ld e, l
+		dec hl
+		dec hl
+		pop bc
+		lddr
+	l_isometric_add_object_to_order_not_to_move:
+	#endasm
 
 	ordered_isometric_objects_table[ordered_index] = isogbl_p_isometric_obj;
 	height_over_proj_plane[ordered_index] = height;
 
 	n_ordered_isometric_objects++;
 }
-
-t_isometric_obj **isogbl_pp_isometric_obj, **isogbl_pp_isometric_obj2;
-byte isogbl_i, isogbl_j;
-byte isogbl_x1, isogbl_x2;
-byte isogbl_y1, isogbl_y2;
-byte isogbl_x3, isogbl_x4;
-byte isogbl_y3, isogbl_y4;
 
 void isometric_step(void)
 {
@@ -208,46 +312,55 @@ void isometric_step(void)
 	}
 
 	// lo proximo parece que ocupa del orden de 80000 ciclos (room 1)
-	for(isogbl_i = 0, isogbl_pp_isometric_obj = ordered_isometric_objects_table; isogbl_i < n_ordered_isometric_objects; isogbl_i++, isogbl_pp_isometric_obj++)
+	for(isogbl_i = 0, isogbl_pp_isometric_obj = ordered_isometric_objects_table; isogbl_i < n_ordered_isometric_objects - 1; isogbl_i++, isogbl_pp_isometric_obj++)
 	{
 		isogbl_psprite1 = &((*isogbl_pp_isometric_obj)->sprite);
-		if(!(isogbl_psprite1->moved_or_changed))
+		for(isogbl_j = isogbl_i + 1, isogbl_pp_isometric_obj2 = ordered_isometric_objects_table + isogbl_i + 1; isogbl_j < n_ordered_isometric_objects; isogbl_j++, isogbl_pp_isometric_obj2++)
 		{
-			//isogbl_x1 = isogbl_psprite1->pos_x;
-			//isogbl_x2 = isogbl_psprite1->pos_x + isogbl_psprite1->width_px - 1;
-			//isogbl_y1 = isogbl_psprite1->pos_y;
-			//isogbl_y2 = isogbl_psprite1->pos_y + isogbl_psprite1->height - 1;
-			for(isogbl_j = 0, isogbl_pp_isometric_obj2 = ordered_isometric_objects_table; isogbl_j < n_ordered_isometric_objects; isogbl_j++, isogbl_pp_isometric_obj2++)
+			isogbl_psprite2 = &((*isogbl_pp_isometric_obj2)->sprite);
+
+			if(isogbl_psprite1->moved_or_changed)
 			{
-				if(isogbl_i == isogbl_j) continue;				
-				isogbl_psprite2 = &((*isogbl_pp_isometric_obj2)->sprite);
-				if((isogbl_i > isogbl_j) && (isogbl_psprite2->redraw_not_moved))
-				{
-					//isogbl_x3 = isogbl_psprite2->pos_x;
-					if (isogbl_psprite2->pos_x > isogbl_psprite1->not_moved_rect_max_x) goto sigue_comprobando;
-					//isogbl_x4 = isogbl_psprite2->pos_x + isogbl_psprite2->width_px - 1;
-					if (isogbl_psprite2->not_moved_rect_max_x < isogbl_psprite1->pos_x) goto sigue_comprobando;
-					//isogbl_y3 = isogbl_psprite2->pos_y;
-					if (isogbl_psprite2->pos_y > isogbl_psprite1->not_moved_rect_max_y) goto sigue_comprobando;
-					//isogbl_y4 = isogbl_psprite2->pos_y + isogbl_psprite2->height - 1;
-					if (isogbl_psprite2->not_moved_rect_max_y < isogbl_psprite1->pos_y) goto sigue_comprobando;
-					isogbl_psprite1->redraw_not_moved = 1;
-					break;
-				}
-			sigue_comprobando:
 				if(isogbl_psprite2->moved_or_changed)
 				{
-					//isogbl_x3 = (isogbl_psprite2->last_x) & 0xf8;
-					if (isogbl_psprite2->erase_rect_min_x > isogbl_psprite1->not_moved_rect_max_x) continue;
-					//isogbl_x4 = (isogbl_psprite2->last_x + isogbl_psprite2->width_px - 1) | 7;
-					if (isogbl_psprite2->erase_rect_max_x < isogbl_psprite1->pos_x) continue;
-					//isogbl_y3 = isogbl_psprite2->last_y;
-					if (isogbl_psprite2->last_y > isogbl_psprite1->not_moved_rect_max_y) continue;
-					//isogbl_y4 = isogbl_psprite2->last_y + isogbl_psprite2->height - 1;
-					if (isogbl_psprite2->erase_rect_max_y < isogbl_psprite1->pos_y) continue;
-					isogbl_psprite1->redraw_not_moved = 1;
-					break;
+					continue;
 				}
+				else
+				{
+					isogbl_psprite3 = isogbl_psprite1;
+					isogbl_psprite4 = isogbl_psprite2;
+					goto comprueba_sprite_borrado_sobre_sprite_inmovil;
+				}
+			}
+			else
+			{
+				if(isogbl_psprite2->moved_or_changed)
+				{
+					isogbl_psprite3 = isogbl_psprite2;
+					isogbl_psprite4 = isogbl_psprite1;
+					goto comprueba_sprite_borrado_sobre_sprite_inmovil;
+				}
+				else
+				{
+					if(!(isogbl_psprite1->redraw_not_moved)	|| (isogbl_psprite2->redraw_not_moved)) continue;
+					if( !((isogbl_psprite1->pos_x > isogbl_psprite2->not_moved_rect_max_x) ||
+						(isogbl_psprite1->not_moved_rect_max_x < isogbl_psprite2->pos_x) ||
+						(isogbl_psprite1->pos_y > isogbl_psprite2->not_moved_rect_max_y) ||
+						(isogbl_psprite1->not_moved_rect_max_y < isogbl_psprite2->pos_y)) )
+					{
+						isogbl_psprite2->redraw_not_moved = 1;
+					}
+				}
+			}
+			continue;
+			comprueba_sprite_borrado_sobre_sprite_inmovil:
+			if(isogbl_psprite4->redraw_not_moved) continue;
+			if( !((isogbl_psprite3->erase_rect_min_x > isogbl_psprite4->not_moved_rect_max_x) ||
+					(isogbl_psprite3->erase_rect_max_x < isogbl_psprite4->pos_x) ||
+					(isogbl_psprite3->last_y > isogbl_psprite4->not_moved_rect_max_y) ||
+					(isogbl_psprite3->erase_rect_max_y < isogbl_psprite4->pos_y)) )
+			{
+				isogbl_psprite4->redraw_not_moved = 1;
 			}
 		}
 	}
