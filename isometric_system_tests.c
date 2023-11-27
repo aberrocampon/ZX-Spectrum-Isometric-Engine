@@ -129,28 +129,26 @@ void isometric_add_object_to_order(void)
 {
 	if(n_ordered_isometric_objects >= N_MAX_ORDERED_ISOMETRIC_OBJECTS) return;
 
-	height = isogbl_p_isometric_obj->physics.box3d.pos_x + isogbl_p_isometric_obj->physics.box3d.pos_y;
-	height -= ((height>>2) + (height>>3));
-	height += isogbl_p_isometric_obj->physics.box3d.pos_z;
+	// height = isogbl_p_isometric_obj->physics.box3d.pos_x + isogbl_p_isometric_obj->physics.box3d.pos_y;
+	// height -= ((height>>2) + (height>>3));
+	// height += isogbl_p_isometric_obj->physics.box3d.pos_z;
 	#asm
 		ld hl, (_isogbl_p_isometric_obj)
-		ld a, (hl)
+		ld a, (hl) ; Offset a pos_x es 0. Ademas pos_y y pos_z estan a continuacion consecutivos.
 		inc hl
 		add (hl)
 		ld e, a
 		ld a, 0
 		adc a, 0
 		ld d, a
+		rra
+		ld a, e
+		rra
+		srl a
 		push hl
-		ld h, 0xf4
-		ld l, e
-		ld a, (hl)
-		jr z, l_isometric_add_object_to_order_calculate_height_1
-		or 0x40
-		l_isometric_add_object_to_order_calculate_height_1:
 		ld l, a
-		ld h, 0xf2
-		add (hl)
+		srl a
+		add l
 		ld l, a
 		ld h, 0
 		ex de, hl
@@ -291,21 +289,88 @@ void isometric_step(void)
 				isometric_proj_obj();
 			}
 
-			if(isogbl_psprite1->moved_or_changed)
-			{
-				sprite_erase_with_zeros(isogbl_psprite1);
+			// if(isogbl_psprite1->moved_or_changed)
+			// {
+			// 	sprite_erase_with_zeros(isogbl_psprite1);
 
-				// calcular y guardar coordenadas de rectangulos de borrado para el chequeo de sprites 
-				// no movidos pero que deben redibujarse porque solapan con uno que se borra y mueve
-				isogbl_psprite1->erase_rect_min_x = (isogbl_psprite1->last_x) & 0xf8;
-				isogbl_psprite1->erase_rect_max_x = (isogbl_psprite1->last_x + isogbl_psprite1->width_px - 1) | 7;
-				isogbl_psprite1->erase_rect_max_y = isogbl_psprite1->last_y + isogbl_psprite1->height - 1;
-			}
-			else
-			{
-				isogbl_psprite1->not_moved_rect_max_x = isogbl_psprite1->pos_x + isogbl_psprite1->width_px - 1;
-				isogbl_psprite1->not_moved_rect_max_y = isogbl_psprite1->pos_y + isogbl_psprite1->height - 1;
-			}
+			// 	// calcular y guardar coordenadas de rectangulos de borrado para el chequeo de sprites 
+			// 	// no movidos pero que deben redibujarse porque solapan con uno que se borra y mueve
+			// 	isogbl_psprite1->erase_rect_min_x = (isogbl_psprite1->last_x) & 0xf8;
+			// 	isogbl_psprite1->erase_rect_max_x = (isogbl_psprite1->last_x + isogbl_psprite1->width_px - 1) | 7;
+			// 	isogbl_psprite1->erase_rect_max_y = isogbl_psprite1->last_y + isogbl_psprite1->height - 1;
+			// }
+			// else
+			// {
+			// 	isogbl_psprite1->not_moved_rect_max_x = isogbl_psprite1->pos_x + isogbl_psprite1->width_px - 1;
+			// 	isogbl_psprite1->not_moved_rect_max_y = isogbl_psprite1->pos_y + isogbl_psprite1->height - 1;
+			// }
+			#asm
+				ld hl, (_isogbl_psprite1)
+				ld bc, T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				ld a, (hl)
+				or a
+				jr z, l_isomectric_step_sprite_not_moved_calculations
+				ld hl, (_isogbl_psprite1)
+				call _sprite_erase_with_zeros
+				ld hl, (_isogbl_psprite1)
+				ld bc, T_SPRITE_OFFSET_LAST_X
+				add hl, bc
+				ld a, (hl)
+				and 0xf8
+				ld d, h
+				ld e, l
+				ld bc, T_SPRITE_OFFSET_ERASE_RECT_MIN_X - T_SPRITE_OFFSET_LAST_X
+				add hl, bc
+				ld (hl), a
+				ex de, hl
+				ld a, (hl)
+				ld bc, T_SPRITE_OFFSET_WIDTH_PX - T_SPRITE_OFFSET_LAST_X
+				add hl, bc
+				add (hl)
+				dec a
+				or 7
+				ex de, hl
+				inc hl
+				ld (hl), a
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_LAST_Y - T_SPRITE_OFFSET_WIDTH_PX
+				add hl, bc
+				ld a, (hl)
+				ld bc, T_SPRITE_OFFSET_HEIGHT - T_SPRITE_OFFSET_LAST_Y
+				add hl, bc
+				add (hl)
+				dec a
+				ex de, hl
+				inc hl
+				ld (hl), a
+				jr l_isomectric_step_sprite_end_calculations
+			l_isomectric_step_sprite_not_moved_calculations:
+				ld bc, T_SPRITE_OFFSET_POS_X - T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				ld a, (hl)
+				ld bc, T_SPRITE_OFFSET_WIDTH_PX - T_SPRITE_OFFSET_POS_X
+				add hl, bc
+				add (hl)
+				dec a
+				ld d, h
+				ld e, l
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X - T_SPRITE_OFFSET_WIDTH_PX
+				add hl, bc
+				ld (hl), a
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_Y - T_SPRITE_OFFSET_WIDTH_PX
+				add hl, bc
+				ld a, (hl)
+				ld bc, T_SPRITE_OFFSET_HEIGHT - T_SPRITE_OFFSET_POS_Y
+				add hl, bc
+				add (hl)
+				dec a
+				ex de, hl
+				inc hl
+				ld (hl), a
+			l_isomectric_step_sprite_end_calculations:
+			#endasm
 			
 			isometric_add_object_to_order();
 		}

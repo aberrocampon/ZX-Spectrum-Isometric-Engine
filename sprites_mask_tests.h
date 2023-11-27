@@ -33,6 +33,20 @@ typedef struct
 	byte not_moved_rect_max_y;
 } t_sprite;
 
+// Offsets a miembros de la estructura para usar dentro del codigo ensamblador inline
+#define T_SPRITE_OFFSET_POS_X 3
+#define T_SPRITE_OFFSET_POS_Y 4
+#define T_SPRITE_OFFSET_LAST_X 5
+#define T_SPRITE_OFFSET_LAST_Y 6
+#define T_SPRITE_OFFSET_HEIGHT 12
+#define T_SPRITE_OFFSET_WIDTH_PX 13
+#define T_SPRITE_OFFSET_MOVED_OR_CHANGED 14
+#define T_SPRITE_OFFSET_ERASE_RECT_MIN_X 24
+#define T_SPRITE_OFFSET_ERASE_RECT_MAX_X 25
+#define T_SPRITE_OFFSET_ERASE_RECT_MAX_Y 26
+#define T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X 27
+#define T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y 28
+
 // Imagen binaria y mascara en bytes alternos
 typedef struct
 {
@@ -65,6 +79,6 @@ void sprite_transfer_vdisplay_2_phys_display(void);
 void sprite_transfer_vdisplay_2_background_vdisplay(void);
 void sprite_transfer_and_restore_vdisplay(void);
 */
-void sprite_erase_with_zeros(t_sprite *psprite);
+void sprite_erase_with_zeros(t_sprite *psprite) __z88dk_fastcall;
 
 #endif
