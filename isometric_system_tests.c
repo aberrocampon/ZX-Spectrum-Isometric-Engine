@@ -384,49 +384,165 @@ void isometric_step(void)
 		{
 			isogbl_psprite2 = &((*isogbl_pp_isometric_obj2)->sprite);
 
-			if(isogbl_psprite1->moved_or_changed)
-			{
-				if(isogbl_psprite2->moved_or_changed)
-				{
-					continue;
-				}
-				else
-				{
-					isogbl_psprite3 = isogbl_psprite1;
-					isogbl_psprite4 = isogbl_psprite2;
-					goto comprueba_sprite_borrado_sobre_sprite_inmovil;
-				}
-			}
-			else
-			{
-				if(isogbl_psprite2->moved_or_changed)
-				{
-					isogbl_psprite3 = isogbl_psprite2;
-					isogbl_psprite4 = isogbl_psprite1;
-					goto comprueba_sprite_borrado_sobre_sprite_inmovil;
-				}
-				else
-				{
-					if(!(isogbl_psprite1->redraw_not_moved)	|| (isogbl_psprite2->redraw_not_moved)) continue;
-					if( !((isogbl_psprite1->pos_x > isogbl_psprite2->not_moved_rect_max_x) ||
-						(isogbl_psprite1->not_moved_rect_max_x < isogbl_psprite2->pos_x) ||
-						(isogbl_psprite1->pos_y > isogbl_psprite2->not_moved_rect_max_y) ||
-						(isogbl_psprite1->not_moved_rect_max_y < isogbl_psprite2->pos_y)) )
-					{
-						isogbl_psprite2->redraw_not_moved = 1;
-					}
-				}
-			}
-			continue;
-			comprueba_sprite_borrado_sobre_sprite_inmovil:
-			if(isogbl_psprite4->redraw_not_moved) continue;
-			if( !((isogbl_psprite3->erase_rect_min_x > isogbl_psprite4->not_moved_rect_max_x) ||
-					(isogbl_psprite3->erase_rect_max_x < isogbl_psprite4->pos_x) ||
-					(isogbl_psprite3->last_y > isogbl_psprite4->not_moved_rect_max_y) ||
-					(isogbl_psprite3->erase_rect_max_y < isogbl_psprite4->pos_y)) )
-			{
-				isogbl_psprite4->redraw_not_moved = 1;
-			}
+			// if(isogbl_psprite1->moved_or_changed)
+			// {
+			// 	if(isogbl_psprite2->moved_or_changed)
+			// 	{
+			// 		continue;
+			// 	}
+			// 	else
+			// 	{
+			// 		isogbl_psprite3 = isogbl_psprite1;
+			// 		isogbl_psprite4 = isogbl_psprite2;
+			// 		goto comprueba_sprite_borrado_sobre_sprite_inmovil;
+			// 	}
+			// }
+			// else
+			// {
+			// 	if(isogbl_psprite2->moved_or_changed)
+			// 	{
+			// 		isogbl_psprite3 = isogbl_psprite2;
+			// 		isogbl_psprite4 = isogbl_psprite1;
+			// 		goto comprueba_sprite_borrado_sobre_sprite_inmovil;
+			// 	}
+			// 	else
+			// 	{
+			// 		if(!(isogbl_psprite1->redraw_not_moved)	|| (isogbl_psprite2->redraw_not_moved)) continue;
+			// 		if( !((isogbl_psprite1->pos_x > isogbl_psprite2->not_moved_rect_max_x) ||
+			// 			(isogbl_psprite1->not_moved_rect_max_x < isogbl_psprite2->pos_x) ||
+			// 			(isogbl_psprite1->pos_y > isogbl_psprite2->not_moved_rect_max_y) ||
+			// 			(isogbl_psprite1->not_moved_rect_max_y < isogbl_psprite2->pos_y)) )
+			// 		{
+			// 			isogbl_psprite2->redraw_not_moved = 1;
+			// 		}
+			// 	}
+			// }
+			// continue;
+			// comprueba_sprite_borrado_sobre_sprite_inmovil:
+			// if(isogbl_psprite4->redraw_not_moved) continue;
+			// if( !((isogbl_psprite3->erase_rect_min_x > isogbl_psprite4->not_moved_rect_max_x) ||
+			// 		(isogbl_psprite3->erase_rect_max_x < isogbl_psprite4->pos_x) ||
+			// 		(isogbl_psprite3->last_y > isogbl_psprite4->not_moved_rect_max_y) ||
+			// 		(isogbl_psprite3->erase_rect_max_y < isogbl_psprite4->pos_y)) )
+			// {
+			// 	isogbl_psprite4->redraw_not_moved = 1;
+			// }
+			#asm
+				ld hl, (_isogbl_psprite1)
+				ld bc, T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				ld a, (hl)
+				or a
+				jr z, l_isomectric_step_sprite_mark_redraw_spr1_not_moved
+				ex de, hl
+				ld hl, (_isogbl_psprite2)
+				add hl, bc
+				ld a, (hl)
+				or a
+				jp nz, l_isomectric_step_sprite_mark_redraw_continue_loop
+				jr l_isomectric_step_sprite_mark_redraw_check_moved_spr_under_unmoved_spr
+
+			l_isomectric_step_sprite_mark_redraw_spr1_not_moved:
+				ex de, hl
+				ld hl, (_isogbl_psprite2)
+				add hl, bc
+				ld a, (hl)
+				or a
+				jr z, l_isomectric_step_sprite_mark_redraw_check_unmoved_spr_under_unmoved_spr
+				ex de, hl
+			l_isomectric_step_sprite_mark_redraw_check_moved_spr_under_unmoved_spr:
+				ld bc, T_SPRITE_OFFSET_REDRAW_NOT_MOVED - T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				ld a, (hl)
+				or a
+				jp nz, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X - T_SPRITE_OFFSET_REDRAW_NOT_MOVED
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_ERASE_RECT_MIN_X - T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_ERASE_RECT_MAX_X - T_SPRITE_OFFSET_ERASE_RECT_MIN_X
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_X - T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y - T_SPRITE_OFFSET_POS_X
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_LAST_Y - T_SPRITE_OFFSET_ERASE_RECT_MAX_X
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_ERASE_RECT_MAX_Y - T_SPRITE_OFFSET_LAST_Y
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_Y - T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_REDRAW_NOT_MOVED - T_SPRITE_OFFSET_POS_Y
+				add hl, bc
+				ld (hl), 1
+				jr l_isomectric_step_sprite_mark_redraw_continue_loop
+
+			l_isomectric_step_sprite_mark_redraw_check_unmoved_spr_under_unmoved_spr:
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_REDRAW_NOT_MOVED - T_SPRITE_OFFSET_MOVED_OR_CHANGED
+				add hl, bc
+				ld a, (hl)
+				or a
+				jr z, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ex de, hl
+				add hl, bc
+				ld a, (hl)
+				or a
+				jr nz, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X - T_SPRITE_OFFSET_REDRAW_NOT_MOVED
+				add hl, bc
+				ld a,(hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_X - T_SPRITE_OFFSET_REDRAW_NOT_MOVED
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X - T_SPRITE_OFFSET_POS_X
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_X - T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y - T_SPRITE_OFFSET_POS_X
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_Y - T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_X
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y - T_SPRITE_OFFSET_POS_Y
+				add hl, bc
+				ld a, (hl)
+				ex de, hl
+				ld bc, T_SPRITE_OFFSET_POS_Y - T_SPRITE_OFFSET_NOT_MOVED_RECT_MAX_Y
+				add hl, bc
+				cp (hl)
+				jr c, l_isomectric_step_sprite_mark_redraw_continue_loop
+				ld bc, T_SPRITE_OFFSET_REDRAW_NOT_MOVED - T_SPRITE_OFFSET_POS_Y
+				add hl, bc
+				ld (hl), 1
+
+			l_isomectric_step_sprite_mark_redraw_continue_loop:
+			#endasm
 		}
 	}
 
