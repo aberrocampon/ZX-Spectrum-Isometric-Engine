@@ -13,6 +13,8 @@
 #include "game_isometric_objects_behavior.h"
 #include "game_map.h"
 
+//byte test_mem[10000];
+
 void main()
 {
 	byte i;

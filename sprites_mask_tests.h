@@ -71,9 +71,9 @@ void sprite_set_frames_subset(t_sprite *psprite, byte *first_frane_address, byte
 void sprite_next_frame(t_sprite *psprite);
 void sprite_set_required_graphic_state(t_sprite *psprite, byte required_graphic_state);
 
-void sprite_set_pos_from_posref(t_sprite *psprite);
-void sprite_draw(t_sprite *psprite);
-void sprite_update_display(t_sprite *psprite);
+void sprite_set_pos_from_posref(t_sprite *psprite) __z88dk_fastcall;
+void sprite_draw(t_sprite *psprite) __z88dk_fastcall;
+void sprite_update_display(t_sprite *psprite) __z88dk_fastcall;
 /*
 void sprite_restore_vdisplay(t_sprite *psprite);
 void sprite_transfer_vdisplay_2_phys_display(void);

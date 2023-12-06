@@ -45,6 +45,8 @@ typedef struct isometric_obj
 	byte graphic_type_index;
 } t_isometric_obj;
 
+#define T_ISOMETRIC_OBJ_OFFSET_SPRITE T_PHYSICS_BOX3D_SIZE + 11
+
 typedef struct
 {
 	// dimensiones de la caja de contencion

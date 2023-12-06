@@ -189,7 +189,7 @@ byte mask_end_array[] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x7, 0x03, 0x01};
 byte sprgbl_x0, sprgbl_x1, sprgbl_aux;
 t_sprite *sprgbl_psprite;
 
-void sprite_set_pos_from_posref(t_sprite *psprite)
+void sprite_set_pos_from_posref(t_sprite *psprite) __z88dk_fastcall
 {
 	sprgbl_psprite = psprite;
 	sprgbl_p_gbd = sprgbl_psprite->actual_frame;
@@ -386,7 +386,7 @@ void sprite_flip_h(void)
 
 }
 
-void sprite_draw(t_sprite *psprite)
+void sprite_draw(t_sprite *psprite) __z88dk_fastcall
 {	
 	sprgbl_psprite = psprite;
 
@@ -557,7 +557,7 @@ void sprite_draw(t_sprite *psprite)
 
 }
 
-void sprite_update_display(t_sprite *psprite)
+void sprite_update_display(t_sprite *psprite) __z88dk_fastcall
 {
 /*
 	sprgbl_psprite = psprite;
@@ -1225,7 +1225,7 @@ void sprite_update_display(t_sprite *psprite)
 // 	#endasm
 // }
 
-void sprite_erase_with_zeros(t_sprite *psprite)
+void sprite_erase_with_zeros(t_sprite *psprite) __z88dk_fastcall
 {
 	sprgbl_psprite = psprite;
 

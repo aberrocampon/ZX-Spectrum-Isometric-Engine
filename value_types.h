@@ -18,9 +18,9 @@ typedef struct
 	byte pos_y;
 	byte pos_z;
 	// dimensiones de la caja de contencion
-	byte width_x;
-	byte width_y;
-	byte height;
+	byte width_x;  // en realidad es width_x /2 
+	byte width_y;  // en realidad es width_y /2
+	byte height;   // en realidad es height / 2
 } t_box3d;
 
 #endif

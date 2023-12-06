@@ -29,15 +29,22 @@
 
 typedef struct physics_box3d
 {
+	byte enabled;
 	// posicion 3d origen es el vertice del plano inferior y con menor x e y de la caja que contiene la forma
 	t_box3d box3d;
+	// precalculos para hacer mas eficiente la ejecucion del modelo fisico. Solo se calculan una vez a cambio de 6 bytes extra en cada onjeto.
+	byte min_pos_x;
+	byte max_pos_x;
+	byte min_pos_y;
+	byte max_pos_y;
+	byte min_pos_z;
+	byte max_pos_z;
 	byte last_pos_x;
 	byte last_pos_y;
 	byte last_pos_z;
 	int8 speed_x;
 	int8 speed_y;
 	int8 speed_z;
-	byte enabled;
 	// contador para reducir el efecto de la garvedad.
 	byte gravity_count;
 	// contacto del objeto caja en las 6 cara con otros objetos, o paredes, techo y suelo
@@ -49,6 +56,9 @@ typedef struct physics_box3d
 	struct physics_box3d *p_phys_obj_touching_u; // contacto en la cara de arriba
 	struct physics_box3d *p_phys_obj_touching_d; // contacto en la cara de abajo
 } t_physics_box3d;
+
+#define T_PHYSICS_BOX3D_SIZE 33
+#define T_PHYSICS_BOX3D_OFFSET_FLAGS 20
 
 extern byte isometric_max_x_3d;
 extern byte isometric_max_y_3d;
